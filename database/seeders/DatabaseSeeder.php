@@ -12,6 +12,7 @@ use App\Models\Schedule;
 use App\Models\Shift;
 use App\Models\User;
 use Carbon\Carbon;
+use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -23,6 +24,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $faker = Faker::create('id_ID');
+
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         User::truncate();
         Department::truncate();
@@ -35,7 +38,7 @@ class DatabaseSeeder extends Seeder
         Fine::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        $this->command->info('Database cleaned. Starting seed...');
+        $this->command->info('Database cleaned. Starting seed.');
 
         $departments = [
             'Human Resources',
@@ -43,6 +46,9 @@ class DatabaseSeeder extends Seeder
             'Finance',
             'Operations',
             'Marketing',
+            'Security',
+            'Office Boy (Cleaning Service)',
+            'Warehouse',
         ];
 
         $deptIds = [];
@@ -63,15 +69,15 @@ class DatabaseSeeder extends Seeder
         }
 
         $holidays = [
-            ['name' => 'New Year', 'date' => '2026-01-01'],
-            ['name' => 'Labor Day', 'date' => '2026-05-01'],
-            ['name' => 'Independence Day', 'date' => '2026-08-17'],
+            ['name' => 'Tahun Baru', 'date' => '2026-01-01'],
+            ['name' => 'Hari Buruh', 'date' => '2026-05-01'],
+            ['name' => 'Hari Kemerdekaan RI', 'date' => '2026-08-17'],
         ];
         foreach ($holidays as $h) {
             Holiday::create($h);
         }
 
-        $createEmployee = function ($name, $email, $role, $deptId = null) {
+        $createEmployee = function ($name, $email, $role, $deptId = null) use ($faker) {
             $user = User::create([
                 'name' => $name,
                 'email' => $email,
@@ -84,37 +90,47 @@ class DatabaseSeeder extends Seeder
                 'department_id' => $deptId,
                 'name' => $name,
                 'role' => $role,
-                'gender' => fake()->randomElement(['PRIA', 'WANITA']),
+                'gender' => $faker->randomElement(['PRIA', 'WANITA']),
                 'remaining_leave_days' => 12,
             ]);
         };
 
         $admin = $createEmployee('Super Admin', 'admin@company.com', 'ADMIN', null);
 
-        $hrd = $createEmployee('Jane HR', 'hr@company.com', 'HRD', $deptIds[0]);
+        $hrd = $createEmployee($faker->name(), 'hr@company.com', 'HRD', $deptIds[0]);
 
-        $managerIT = $createEmployee('John Manager', 'manager@company.com', 'MANAGER', $deptIds[1]);
+        $managers = [];
+        foreach ($departments as $index => $deptName) {
+            $emailSlug = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $deptName));
 
-        $employees = [];
-        for ($i = 1; $i <= 15; $i++) {
-            $employees[] = $createEmployee(
-                fake()->name(),
-                "employee{$i}@company.com",
-                'EMPLOYEE',
-                fake()->randomElement($deptIds)
+            $managers[] = $createEmployee(
+                $faker->name(),
+                "manager.{$emailSlug}@company.com",
+                'MANAGER',
+                $deptIds[$index]
             );
         }
 
-        $allEmployees = array_merge([$admin, $hrd, $managerIT], $employees);
+        $employees = [];
+        for ($i = 1; $i <= 50; $i++) {
+            $firstName = $faker->firstName();
+            $employees[] = $createEmployee(
+                $faker->name(),
+                strtolower($firstName)."{$i}@company.com",
+                'EMPLOYEE',
+                $faker->randomElement($deptIds)
+            );
+        }
+
+        $allEmployees = array_merge([$admin, $hrd], $managers, $employees);
 
         $startDate = Carbon::now()->subDays(30);
         $endDate = Carbon::now()->addDays(7);
 
-        $this->command->info('Generating Roster and Attendance...');
+        $this->command->info('Generating Roster and Attendance for all employees (including managers)...');
 
         foreach ($allEmployees as $emp) {
             $current = $startDate->copy();
-
             while ($current <= $endDate) {
                 if ($current->isWeekend()) {
                     $current->addDay();
@@ -122,10 +138,9 @@ class DatabaseSeeder extends Seeder
                     continue;
                 }
 
-                $shiftId = fake()->randomElement($shiftIds);
                 $schedule = Schedule::create([
                     'employee_id' => $emp->id,
-                    'shift_id' => $shiftId,
+                    'shift_id' => $faker->randomElement($shiftIds),
                     'date' => $current->format('Y-m-d'),
                 ]);
 
@@ -139,15 +154,10 @@ class DatabaseSeeder extends Seeder
                     if ($rand > 90) {
                         $status = 'LATE';
                         $clockIn = $current->copy()->setTime(8, rand(15, 59));
-                    } elseif ($rand > 95) {
+                    } elseif ($rand > 96) {
                         $status = 'ABSENT';
                         $clockIn = null;
                         $clockOut = null;
-                    } elseif ($rand > 98) {
-                        $status = 'SICK';
-                        $clockIn = null;
-                        $clockOut = null;
-                        $notes = 'Doctor note attached';
                     }
 
                     Attendance::create([
@@ -160,65 +170,17 @@ class DatabaseSeeder extends Seeder
                         'notes' => $notes,
                     ]);
                 }
-
                 $current->addDay();
             }
         }
 
-        $this->command->info('Generating Leave Requests...');
-
-        $leaveTypes = ['ANNUAL', 'SICK', 'MATERNITY', 'MARRIAGE'];
-
         foreach ($allEmployees as $emp) {
-            $pastStart = Carbon::now()->subDays(rand(10, 60));
-            $pastEnd = $pastStart->copy()->addDays(2);
-
-            $pastStatus = fake()->randomElement(['APPROVED', 'REJECTED']);
-
-            LeaveRequest::create([
-                'employee_id' => $emp->id,
-                'type' => fake()->randomElement($leaveTypes),
-                'reason' => 'Family matter',
-                'start_date' => $pastStart,
-                'end_date' => $pastEnd,
-                'status' => $pastStatus,
-                'manager_status' => $pastStatus,
-                'hrd_status' => $pastStatus,
-                'manager_id' => $managerIT->id,
-                'hrd_id' => $hrd->id,
-            ]);
-
-            if (rand(0, 1)) {
-                $futureStart = Carbon::now()->addDays(rand(5, 20));
-                $futureEnd = $futureStart->copy()->addDays(rand(1, 3));
-
-                $futureStatus = fake()->randomElement(['PENDING', 'APPROVED', 'REJECTED']);
-
-                $mgrStatus = $futureStatus === 'PENDING' ? fake()->randomElement(['PENDING', 'APPROVED']) : $futureStatus;
-                $hrStatus = $futureStatus === 'PENDING' ? 'PENDING' : $futureStatus;
-
-                LeaveRequest::create([
-                    'employee_id' => $emp->id,
-                    'type' => 'ANNUAL',
-                    'reason' => 'Holiday trip',
-                    'start_date' => $futureStart,
-                    'end_date' => $futureEnd,
-                    'status' => $futureStatus,
-                    'manager_status' => $mgrStatus,
-                    'hrd_status' => $hrStatus,
-                    'manager_id' => $managerIT->id,
-                    'hrd_id' => $hrd->id,
-                ]);
-            }
-        }
-
-        foreach ($allEmployees as $emp) {
-            if (rand(0, 10) > 8) {
+            if (rand(1, 10) > 8) {
                 Fine::create([
                     'employee_id' => $emp->id,
-                    'date' => Carbon::now()->subDays(rand(1, 20)),
+                    'date' => Carbon::now()->subDays(rand(1, 15)),
                     'amount' => 50000,
-                    'reason' => 'Late more than 30 minutes',
+                    'reason' => 'Terlambat lebih dari 30 menit',
                 ]);
             }
         }

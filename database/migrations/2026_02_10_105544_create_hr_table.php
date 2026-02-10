@@ -28,6 +28,7 @@ return new class extends Migration
             $table->enum('role', ['ADMIN', 'HRD', 'MANAGER', 'EMPLOYEE'])->default('EMPLOYEE');
             $table->enum('gender', ['PRIA', 'WANITA']);
             $table->unsignedTinyInteger('remaining_leave_days')->default(8);
+            $table->softDeletes();
             $table->timestamps();
         });
     }
