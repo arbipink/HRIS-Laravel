@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\LeaveStatus;
+use App\Enums\LeaveType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,6 +23,13 @@ class LeaveRequest extends Model
         'hrd_status',
         'manager_id',
         'hrd_id',
+    ];
+
+    protected $casts = [
+        'type' => LeaveType::class,
+        'status' => LeaveStatus::class,
+        'manager_status' => LeaveStatus::class,
+        'hrd_status' => LeaveStatus::class,
     ];
 
     public function employee()

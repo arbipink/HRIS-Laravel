@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EmployeeRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,6 +18,10 @@ class Employee extends Model
         'role',
         'gender',
         'remaining_leave_days',
+    ];
+
+    protected $casts = [
+        'role' => EmployeeRole::class,
     ];
 
     public function user()
