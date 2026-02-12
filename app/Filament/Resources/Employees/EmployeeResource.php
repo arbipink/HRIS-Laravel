@@ -40,10 +40,14 @@ class EmployeeResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('user_id')
-                    ->numeric(),
-                TextInput::make('department_id')
-                    ->numeric(),
+                Select::make('user_id')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload(),
+                Select::make('department_id')
+                    ->relationship('department', 'name')
+                    ->searchable()
+                    ->preload(),
                 TextInput::make('name')
                     ->required(),
                 Select::make('role')
@@ -51,7 +55,7 @@ class EmployeeResource extends Resource
                     ->default('EMPLOYEE')
                     ->required(),
                 Select::make('gender')
-                    ->options(['PRIA' => 'P r i a', 'WANITA' => 'W a n i t a'])
+                    ->options(['PRIA' => 'Pria', 'WANITA' => 'Wanita'])
                     ->required(),
                 TextInput::make('remaining_leave_days')
                     ->required()
@@ -64,12 +68,10 @@ class EmployeeResource extends Resource
     {
         return $schema
             ->components([
-                TextEntry::make('user_id')
-                    ->numeric()
-                    ->placeholder('-'),
-                TextEntry::make('department_id')
-                    ->numeric()
-                    ->placeholder('-'),
+                TextEntry::make('user.name')
+                    ->label('User'),
+                TextEntry::make('department.name')
+                    ->label('Department'),
                 TextEntry::make('name'),
                 TextEntry::make('role')
                     ->badge(),
@@ -90,11 +92,9 @@ class EmployeeResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('department_id')
-                    ->numeric()
+                TextColumn::make('department.name')
+                    ->label('Department')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('name')
                     ->searchable(),
