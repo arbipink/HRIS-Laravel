@@ -88,7 +88,6 @@ class DatabaseSeeder extends Seeder
             return Employee::create([
                 'user_id' => $user->id,
                 'department_id' => $deptId,
-                'name' => $name,
                 'role' => $role,
                 'gender' => $faker->randomElement(['PRIA', 'WANITA']),
                 'remaining_leave_days' => 12,

@@ -43,13 +43,12 @@ class EmployeeResource extends Resource
                 Select::make('user_id')
                     ->relationship('user', 'name')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->required(),
                 Select::make('department_id')
                     ->relationship('department', 'name')
                     ->searchable()
                     ->preload(),
-                TextInput::make('name')
-                    ->required(),
                 Select::make('role')
                     ->options(EmployeeRole::class)
                     ->default('EMPLOYEE')
@@ -72,7 +71,6 @@ class EmployeeResource extends Resource
                     ->label('User'),
                 TextEntry::make('department.name')
                     ->label('Department'),
-                TextEntry::make('name'),
                 TextEntry::make('role')
                     ->badge(),
                 TextEntry::make('gender')
@@ -96,8 +94,10 @@ class EmployeeResource extends Resource
                     ->label('Department')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('name')
-                    ->searchable(),
+                TextColumn::make('user.name')
+                    ->label('Employee Name')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('role')
                     ->badge(),
                 TextColumn::make('gender')
