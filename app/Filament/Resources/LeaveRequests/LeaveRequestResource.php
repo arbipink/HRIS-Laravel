@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LeaveRequests;
 
+use App\Enums\EmployeeRole;
 use App\Enums\LeaveStatus;
 use App\Enums\LeaveType;
 use App\Filament\Resources\LeaveRequests\Pages\ManageLeaveRequests;
@@ -21,6 +22,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class LeaveRequestResource extends Resource
@@ -30,6 +33,30 @@ class LeaveRequestResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::ArrowRightOnRectangle;
 
     protected static string|UnitEnum|null $navigationGroup = 'Management';
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = Auth::user();
+
+        if (! $user || ! $user->employee) {
+            return $query;
+        }
+
+        $employee = $user->employee;
+
+        if ($employee->role === EmployeeRole::EMPLOYEE) {
+            return $query->where('employee_id', $employee->id);
+        }
+
+        if ($employee->role === EmployeeRole::MANAGER) {
+            return $query->whereHas('employee', function (Builder $q) use ($employee) {
+                $q->where('department_id', $employee->department_id);
+            });
+        }
+
+        return $query;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -72,8 +99,8 @@ class LeaveRequestResource extends Resource
     {
         return $schema
             ->components([
-                TextEntry::make('employee_id')
-                    ->numeric(),
+                TextEntry::make('employee.user.name')
+                    ->label('Employee'),
                 TextEntry::make('type')
                     ->badge(),
                 TextEntry::make('reason'),
@@ -87,13 +114,13 @@ class LeaveRequestResource extends Resource
                     ->badge(),
                 TextEntry::make('manager_status')
                     ->badge(),
-                TextEntry::make('manager_id')
-                    ->numeric()
+                TextEntry::make('manager.user.name')
+                    ->label('Manager')
                     ->placeholder('-'),
                 TextEntry::make('hrd_status')
                     ->badge(),
-                TextEntry::make('hrd_id')
-                    ->numeric()
+                TextEntry::make('hrd.user.name')
+                    ->label('HRD')
                     ->placeholder('-'),
                 TextEntry::make('created_at')
                     ->dateTime()
@@ -108,33 +135,24 @@ class LeaveRequestResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('employee_id')
-                    ->numeric()
+                TextColumn::make('employee.user.name')
+                    ->label('Employee')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('type')
                     ->badge(),
-                TextColumn::make('reason')
-                    ->searchable(),
                 TextColumn::make('start_date')
                     ->date()
                     ->sortable(),
                 TextColumn::make('end_date')
                     ->date()
                     ->sortable(),
-                TextColumn::make('attachment_path')
-                    ->searchable(),
                 TextColumn::make('status')
                     ->badge(),
                 TextColumn::make('manager_status')
                     ->badge(),
-                TextColumn::make('manager_id')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('hrd_status')
                     ->badge(),
-                TextColumn::make('hrd_id')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

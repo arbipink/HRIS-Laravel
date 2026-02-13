@@ -126,8 +126,6 @@ class DatabaseSeeder extends Seeder
         $startDate = Carbon::now()->subDays(30);
         $endDate = Carbon::now()->addDays(7);
 
-        $this->command->info('Generating Roster and Attendance for all employees (including managers)...');
-
         foreach ($allEmployees as $emp) {
             $current = $startDate->copy();
             while ($current <= $endDate) {
@@ -180,6 +178,56 @@ class DatabaseSeeder extends Seeder
                     'date' => Carbon::now()->subDays(rand(1, 15)),
                     'amount' => 50000,
                     'reason' => 'Terlambat lebih dari 30 menit',
+                ]);
+            }
+        }
+
+        $hrdId = $hrd->id;
+
+        foreach ($employees as $emp) {
+
+            $manager = collect($managers)->firstWhere('department_id', $emp->department_id);
+            $managerId = $manager ? $manager->id : null;
+
+            for ($k = 0; $k < rand(1, 3); $k++) {
+
+                $startDate = Carbon::now()->subMonths(rand(1, 6))->subDays(rand(1, 20));
+                $daysTaken = rand(1, 3);
+                $endDate = $startDate->copy()->addDays($daysTaken - 1);
+
+                $chance = rand(1, 100);
+
+                $finalStatus = 'REJECTED';
+                $managerStatus = 'PENDING';
+                $hrdStatus = 'PENDING';
+
+                if ($chance <= 70) {
+                    $managerStatus = 'APPROVED';
+                    $hrdStatus = 'APPROVED';
+                    $finalStatus = 'APPROVED';
+                } elseif ($chance <= 85) {
+                    $managerStatus = 'REJECTED';
+                    $hrdStatus = 'PENDING';
+                    $finalStatus = 'REJECTED';
+                } else {
+                    $managerStatus = 'APPROVED';
+                    $hrdStatus = 'REJECTED';
+                    $finalStatus = 'REJECTED';
+                }
+
+                LeaveRequest::create([
+                    'employee_id' => $emp->id,
+                    'type' => $faker->randomElement(['ANNUAL', 'SICK', 'ANNUAL', 'ANNUAL']),
+                    'reason' => $faker->sentence(6),
+                    'start_date' => $startDate->format('Y-m-d'),
+                    'end_date' => $endDate->format('Y-m-d'),
+                    'attachment_path' => null,
+
+                    'status' => $finalStatus,
+                    'manager_status' => $managerStatus,
+                    'hrd_status' => $hrdStatus,
+                    'manager_id' => $managerId,
+                    'hrd_id' => $hrdId,
                 ]);
             }
         }

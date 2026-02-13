@@ -36,4 +36,14 @@ class LeaveRequest extends Model
     {
         return $this->belongsTo(Employee::class);
     }
+
+    public function manager()
+    {
+        return $this->belongsTo(Employee::class, 'manager_id');
+    }
+
+    public function hrd()
+    {
+        return $this->belongsTo(Employee::class, 'hrd_id');
+    }
 }
