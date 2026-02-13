@@ -6,6 +6,7 @@ use App\Enums\EmployeeRole;
 use App\Enums\LeaveStatus;
 use App\Enums\LeaveType;
 use App\Filament\Resources\LeaveRequests\Pages\ManageLeaveRequests;
+use App\Models\Employee;
 use App\Models\LeaveRequest;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -13,17 +14,21 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+// Add this
+// Add this alias to avoid conflict
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 class LeaveRequestResource extends Resource
@@ -38,9 +43,42 @@ class LeaveRequestResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('employee_id')
-                    ->required()
-                    ->numeric(),
+                Select::make('employee_id')
+                    ->label('Employee')
+                    ->options(Employee::with('user')->get()->pluck('user.name', 'id'))
+                    ->default(Auth::user()->employee?->id)
+                    ->disabled()
+                    ->dehydrated()
+                    ->required(),
+                Select::make('manager_id')
+                    ->label('Manager')
+                    ->options(Employee::with('user')->get()->pluck('user.name', 'id'))
+                    ->default(function () {
+                        $employee = Auth::user()->employee;
+
+                        if (! $employee || ! $employee->department_id) {
+                            return null;
+                        }
+
+                        return Employee::where('department_id', $employee->department_id)
+                            ->where('role', EmployeeRole::MANAGER)
+                            ->first()?->id;
+                    })
+                    ->disabled()
+                    ->dehydrated()
+                    ->required(),
+                Select::make('hrd_id')
+                    ->label('HRD')
+                    ->options(
+                        Employee::where('role', EmployeeRole::HRD)
+                            ->with('user')
+                            ->get()
+                            ->pluck('user.name', 'id')
+                    )
+                    ->default(fn () => Employee::where('role', EmployeeRole::HRD)->first()?->id)
+                    ->disabled()
+                    ->dehydrated()
+                    ->required(),
                 Select::make('type')
                     ->options(LeaveType::class)
                     ->default('ANNUAL')
@@ -51,23 +89,15 @@ class LeaveRequestResource extends Resource
                     ->required(),
                 DatePicker::make('end_date')
                     ->required(),
-                TextInput::make('attachment_path'),
-                Select::make('status')
-                    ->options(LeaveStatus::class)
-                    ->default('PENDING')
-                    ->required(),
-                Select::make('manager_status')
-                    ->options(LeaveStatus::class)
-                    ->default('PENDING')
-                    ->required(),
-                TextInput::make('manager_id')
-                    ->numeric(),
-                Select::make('hrd_status')
-                    ->options(LeaveStatus::class)
-                    ->default('PENDING')
-                    ->required(),
-                TextInput::make('hrd_id')
-                    ->numeric(),
+                FileUpload::make('attachment_path')
+                    ->directory('leave-requests')
+                    ->visibility('private')
+                    ->acceptedFileTypes(['application/pdf', 'image/*'])
+                    ->maxSize(15000)
+                    ->columnSpanFull()
+                    ->openable()
+                    ->downloadable()
+                    ->previewable(),
             ]);
     }
 
@@ -84,17 +114,18 @@ class LeaveRequestResource extends Resource
                     ->date(),
                 TextEntry::make('end_date')
                     ->date(),
-                TextEntry::make('attachment_path')
-                    ->placeholder('-'),
                 TextEntry::make('status')
-                    ->badge(),
+                    ->badge()
+                    ->visible(fn (LeaveRequest $record) => $record->status !== LeaveStatus::PENDING),
                 TextEntry::make('manager_status')
-                    ->badge(),
+                    ->badge()
+                    ->visible(fn (LeaveRequest $record) => $record->manager_status !== LeaveStatus::PENDING),
                 TextEntry::make('manager.user.name')
                     ->label('Manager')
                     ->placeholder('-'),
                 TextEntry::make('hrd_status')
-                    ->badge(),
+                    ->badge()
+                    ->visible(fn (LeaveRequest $record) => $record->hrd_status !== LeaveStatus::PENDING),
                 TextEntry::make('hrd.user.name')
                     ->label('HRD')
                     ->placeholder('-'),
@@ -104,6 +135,14 @@ class LeaveRequestResource extends Resource
                 TextEntry::make('updated_at')
                     ->dateTime()
                     ->placeholder('-'),
+                TextEntry::make('attachment_path')
+                    ->label('Attachment')
+                    ->formatStateUsing(fn () => 'View Document')
+                    ->icon('heroicon-o-document-text')
+                    ->color('primary')
+                    ->url(fn (LeaveRequest $record) => route('leave-requests.attachment.view', $record))
+                    ->openUrlInNewTab()
+                    ->visible(fn (LeaveRequest $record) => $record->attachment_path),
             ]);
     }
 
@@ -170,9 +209,17 @@ class LeaveRequestResource extends Resource
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()
-                    ->visible(fn (LeaveRequest $record) => $record->status === LeaveStatus::PENDING && $record->manager_status === LeaveStatus::PENDING && $record->hrd_status === LeaveStatus::PENDING),
+                    ->visible(fn (LeaveRequest $record) => $record->status === LeaveStatus::PENDING &&
+                        $record->manager_status === LeaveStatus::PENDING &&
+                        $record->hrd_status === LeaveStatus::PENDING &&
+                        $record->employee_id === Auth::user()->employee?->id
+                    ),
                 DeleteAction::make()
-                    ->visible(fn (LeaveRequest $record) => $record->status === LeaveStatus::PENDING && $record->manager_status === LeaveStatus::PENDING && $record->hrd_status === LeaveStatus::PENDING),
+                    ->visible(fn (LeaveRequest $record) => $record->status === LeaveStatus::PENDING &&
+                        $record->manager_status === LeaveStatus::PENDING &&
+                        $record->hrd_status === LeaveStatus::PENDING &&
+                        $record->employee_id === Auth::user()->employee?->id
+                    ),
                 Action::make('approve')
                     ->icon(Heroicon::Check)
                     ->color('success')
@@ -247,5 +294,23 @@ class LeaveRequestResource extends Resource
         return [
             'index' => ManageLeaveRequests::route('/'),
         ];
+    }
+
+    private static function isImage(?string $path): bool
+    {
+        if (! $path) {
+            return false;
+        }
+
+        return Str::endsWith(Str::lower($path), ['.jpg', '.jpeg', '.png', '.webp']);
+    }
+
+    private static function isPdf(?string $path): bool
+    {
+        if (! $path) {
+            return false;
+        }
+
+        return Str::endsWith(Str::lower($path), '.pdf');
     }
 }
