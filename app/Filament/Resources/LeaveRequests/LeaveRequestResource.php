@@ -295,6 +295,13 @@ class LeaveRequestResource extends Resource
                         $record->hrd_status === LeaveStatus::PENDING &&
                         $record->employee_id === Auth::user()->employee?->id
                     ),
+                Action::make('download_pdf')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->label('Download PDF')
+                    ->color('info')
+                    ->url(fn (LeaveRequest $record) => route('leave-requests.download-pdf', $record))
+                    ->openUrlInNewTab()
+                    ->visible(fn (LeaveRequest $record) => $record->status === LeaveStatus::APPROVED),
                 Action::make('approve')
                     ->icon(Heroicon::Check)
                     ->color('success')

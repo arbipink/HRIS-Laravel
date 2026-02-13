@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\EmployeeRole;
+use App\Http\Controllers\LeaveRequestController;
 use App\Models\LeaveRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -25,3 +26,7 @@ Route::get('/leave-requests/{record}/attachment', function (LeaveRequest $record
     return Storage::response($record->attachment_path);
 
 })->middleware('auth')->name('leave-requests.attachment.view');
+
+Route::get('/leave-requests/{leaveRequest}/pdf', [LeaveRequestController::class, 'downloadPdf'])
+    ->name('leave-requests.download-pdf')
+    ->middleware('auth');
