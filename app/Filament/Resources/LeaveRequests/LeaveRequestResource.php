@@ -9,6 +9,7 @@ use App\Filament\Resources\LeaveRequests\Pages\ManageLeaveRequests;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
 use BackedEnum;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -25,6 +26,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use UnitEnum;
@@ -98,9 +100,6 @@ class LeaveRequestResource extends Resource
                     }),
 
                 DatePicker::make('start_date')
-                    ->required(),
-
-                DatePicker::make('end_date')
                     ->required()
                     ->helperText(fn ($get) => match ($get('type') instanceof LeaveType ? $get('type')->value : $get('type')) {
                         'ANNUAL' => 'Jatah: 12 Hari per tahun.',
@@ -114,6 +113,50 @@ class LeaveRequestResource extends Resource
                         default => null,
                     }),
 
+                DatePicker::make('end_date')
+                    ->required()
+                    ->afterOrEqual('start_date')
+                    ->helperText(function ($get) {
+                        $type = $get('type');
+                        $typeValue = $type instanceof LeaveType ? $type->value : $type;
+
+                        if ($typeValue === 'ANNUAL') {
+                            $employee = Auth::user()->employee;
+
+                            if (! $employee) {
+                                return null;
+                            }
+
+                            return "Jatah anda tersisa {$employee->remaining_leave_days} hari";
+                        }
+
+                        return null;
+                    })
+                    ->rules([
+                        fn ($get) => function (string $attribute, $value, Closure $fail) use ($get) {
+                            $type = $get('type');
+                            $typeValue = $type instanceof LeaveType ? $type->value : $type;
+
+                            if ($typeValue === 'ANNUAL') {
+                                $employee = Auth::user()->employee;
+
+                                if (! $employee || $employee->remaining_leave_days <= 0) {
+                                    $fail('Anda tidak memiliki sisa cuti tahunan.');
+
+                                    return;
+                                }
+
+                                $startDate = Carbon::parse($get('start_date'));
+                                $endDate = Carbon::parse($value);
+                                $daysRequested = $startDate->diffInDays($endDate) + 1;
+
+                                if ($daysRequested > $employee->remaining_leave_days) {
+                                    $fail("Pengajuan {$daysRequested} hari melebihi sisa cuti anda ({$employee->remaining_leave_days} hari).");
+                                }
+                            }
+                        },
+                    ]),
+
                 FileUpload::make('attachment_path')
                     ->directory('leave-requests')
                     ->visibility('private')
@@ -126,7 +169,7 @@ class LeaveRequestResource extends Resource
                     ->helperText(fn ($get) => match ($get('type') instanceof LeaveType ? $get('type')->value : $get('type')) {
                         'SICK' => 'Wajib: Unggah Surat Dokter.',
                         'MARRIAGE' => 'Wajib: Unggah Undangan atau Sertifikat Pernikahan.',
-                        'MATERNITY', 'MISCARRIAGE', 'PATERNITY' => 'Wajib: Unggah Surat/Konfirmasi Medis.', // Fixed Typo
+                        'MATERNITY', 'MISCARRIAGE', 'PATERNITY' => 'Wajib: Unggah Surat/Konfirmasi Medis.',
                         'BEREAVEMENT' => 'Wajib: Unggah Surat Kematian.',
                         default => 'Unggah dokumen pendukung jika tersedia.',
                     }),
