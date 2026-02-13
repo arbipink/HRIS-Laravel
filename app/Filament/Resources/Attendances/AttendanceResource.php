@@ -3,13 +3,10 @@
 namespace App\Filament\Resources\Attendances;
 
 use App\Enums\AttendanceStatus;
+use App\Enums\EmployeeRole;
 use App\Filament\Resources\Attendances\Pages\ManageAttendances;
 use App\Models\Attendance;
 use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -22,6 +19,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class AttendanceResource extends Resource
@@ -31,6 +30,31 @@ class AttendanceResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::CheckBadge;
 
     protected static string|UnitEnum|null $navigationGroup = 'Operations';
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = Auth::user();
+
+        if (! $user || ! $user->employee) {
+            return $query;
+        }
+
+        $employee = $user->employee;
+
+        if ($employee->role === EmployeeRole::MANAGER) {
+            return $query->whereHas('employee', function (Builder $q) use ($employee) {
+                $q->where('department_id', $employee->department_id);
+            });
+        }
+
+        if ($employee->role === EmployeeRole::EMPLOYEE) {
+            return $query->where('employee_id', $employee->id);
+        }
+
+        return $query;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -120,13 +144,9 @@ class AttendanceResource extends Resource
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+
             ]);
     }
 
