@@ -20,8 +20,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-// Add this
-// Add this alias to avoid conflict
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -82,13 +80,40 @@ class LeaveRequestResource extends Resource
                 Select::make('type')
                     ->options(LeaveType::class)
                     ->default('ANNUAL')
+                    ->live()
                     ->required(),
+
                 TextInput::make('reason')
-                    ->required(),
+                    ->required()
+                    ->helperText(fn ($get) => match ($get('type') instanceof LeaveType ? $get('type')->value : $get('type')) {
+                        'ANNUAL' => 'Syarat: Setelah masa kerja 12 bulan.',
+                        'MATERNITY' => 'Syarat: 1.5 bulan pra-lahir + 1.5 bulan pasca-lahir.',
+                        'MISCARRIAGE' => 'Syarat: Wajib istirahat (Gugur Kandungan).',
+                        'MENSTRUAL' => 'Syarat: Hari pertama & kedua haid jika sakit.',
+                        'SICK' => 'Syarat: Sedang sakit dan tidak bisa bekerja.',
+                        'MARRIAGE' => 'Syarat: Pernikahan karyawan sendiri.',
+                        'PATERNITY' => 'Syarat: Istri melahirkan atau keguguran.',
+                        'BEREAVEMENT' => 'Syarat: Meninggalnya suami/istri, orang tua/mertua, atau anak/menantu.',
+                        default => null,
+                    }),
+
                 DatePicker::make('start_date')
                     ->required(),
+
                 DatePicker::make('end_date')
-                    ->required(),
+                    ->required()
+                    ->helperText(fn ($get) => match ($get('type') instanceof LeaveType ? $get('type')->value : $get('type')) {
+                        'ANNUAL' => 'Jatah: 12 Hari per tahun.',
+                        'MATERNITY' => 'Jatah: Maksimal 3 Bulan.',
+                        'MISCARRIAGE' => 'Jatah: Maksimal 1.5 Bulan.',
+                        'MENSTRUAL' => 'Jatah: Maksimal 2 Hari.',
+                        'SICK' => 'Jatah: Sesuai keterangan dokter.',
+                        'MARRIAGE' => 'Jatah: 3 Hari.',
+                        'PATERNITY' => 'Jatah: 2 Hari.',
+                        'BEREAVEMENT' => 'Jatah: 2 Hari.',
+                        default => null,
+                    }),
+
                 FileUpload::make('attachment_path')
                     ->directory('leave-requests')
                     ->visibility('private')
@@ -97,7 +122,14 @@ class LeaveRequestResource extends Resource
                     ->columnSpanFull()
                     ->openable()
                     ->downloadable()
-                    ->previewable(),
+                    ->previewable()
+                    ->helperText(fn ($get) => match ($get('type') instanceof LeaveType ? $get('type')->value : $get('type')) {
+                        'SICK' => 'Wajib: Unggah Surat Dokter.',
+                        'MARRIAGE' => 'Wajib: Unggah Undangan atau Sertifikat Pernikahan.',
+                        'MATERNITY', 'MISCARRIAGE', 'PATERNITY' => 'Wajib: Unggah Surat/Konfirmasi Medis.', // Fixed Typo
+                        'BEREAVEMENT' => 'Wajib: Unggah Surat Kematian.',
+                        default => 'Unggah dokumen pendukung jika tersedia.',
+                    }),
             ]);
     }
 
