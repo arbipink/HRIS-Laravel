@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EmployeeRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,10 +14,13 @@ class Employee extends Model
     protected $fillable = [
         'user_id',
         'department_id',
-        'name',
         'role',
         'gender',
         'remaining_leave_days',
+    ];
+
+    protected $casts = [
+        'role' => EmployeeRole::class,
     ];
 
     public function user()

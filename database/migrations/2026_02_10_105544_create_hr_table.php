@@ -21,13 +21,12 @@ return new class extends Migration
         // 2. Employees
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->unique()->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
             $table->foreignId('department_id')->nullable()->constrained()->onDelete('set null');
-
-            $table->string('name');
             $table->enum('role', ['ADMIN', 'HRD', 'MANAGER', 'EMPLOYEE'])->default('EMPLOYEE');
             $table->enum('gender', ['PRIA', 'WANITA']);
             $table->unsignedTinyInteger('remaining_leave_days')->default(8);
+            $table->softDeletes();
             $table->timestamps();
         });
     }
