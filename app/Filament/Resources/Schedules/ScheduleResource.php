@@ -2,22 +2,29 @@
 
 namespace App\Filament\Resources\Schedules;
 
+use App\Enums\DaysOfWeek;
+use App\Enums\EmployeeRole;
 use App\Filament\Resources\Schedules\Pages\ManageSchedules;
+use App\Models\Employee;
 use App\Models\Schedule;
 use BackedEnum;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TimePicker;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class ScheduleResource extends Resource
@@ -28,17 +35,46 @@ class ScheduleResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Operations';
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = Auth::user();
+
+        if (! $user->employee) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        $role = $user->employee->role;
+
+        if (in_array($role, [EmployeeRole::ADMIN, EmployeeRole::HRD])) {
+            return $query;
+        }
+
+        if ($role === EmployeeRole::MANAGER) {
+            return $query->whereHas('employee', function (Builder $q) use ($user) {
+                $q->where('department_id', $user->employee->department_id);
+            });
+        }
+
+        return $query->where('employee_id', $user->employee->id);
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                TextInput::make('employee_id')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('shift_id')
-                    ->required()
-                    ->numeric(),
-                DatePicker::make('date')
+                Select::make('employee_id')
+                    ->label('Employee')
+                    ->options(Employee::with('user')->get()->pluck('user.name', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                Select::make('day_of_week')
+                    ->options(DaysOfWeek::class)
+                    ->required(),
+                TimePicker::make('start_time')
+                    ->required(),
+                TimePicker::make('end_time')
                     ->required(),
             ]);
     }
@@ -47,12 +83,14 @@ class ScheduleResource extends Resource
     {
         return $schema
             ->components([
-                TextEntry::make('employee_id')
+                TextEntry::make('employee.user.name')
                     ->numeric(),
-                TextEntry::make('shift_id')
-                    ->numeric(),
-                TextEntry::make('date')
-                    ->date(),
+                TextEntry::make('day_of_week')
+                    ->badge(),
+                TextEntry::make('start_time')
+                    ->time(),
+                TextEntry::make('end_time')
+                    ->time(),
                 TextEntry::make('created_at')
                     ->dateTime()
                     ->placeholder('-'),
@@ -66,14 +104,16 @@ class ScheduleResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('employee_id')
-                    ->numeric()
+                TextColumn::make('employee.user.name')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('shift_id')
-                    ->numeric()
+                TextColumn::make('day_of_week')
+                    ->badge(),
+                TextColumn::make('start_time')
+                    ->time()
                     ->sortable(),
-                TextColumn::make('date')
-                    ->date()
+                TextColumn::make('end_time')
+                    ->time()
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -95,6 +135,22 @@ class ScheduleResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    BulkAction::make('update_times')
+                        ->label('Update Schedule Times')
+                        ->icon(Heroicon::Clock)
+                        ->schema([
+                            TimePicker::make('start_time')
+                                ->required(),
+                            TimePicker::make('end_time')
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            $records->each(fn (Schedule $record) => $record->update([
+                                'start_time' => $data['start_time'],
+                                'end_time' => $data['end_time'],
+                            ]));
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
     }
