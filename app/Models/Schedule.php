@@ -10,10 +10,11 @@ class Schedule extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['employee_id',
-        'shift_id',
+    protected $fillable = [
+        'employee_id',
         'day_of_week',
-        'date',
+        'start_time',
+        'end_time',
     ];
 
     protected function casts(): array
