@@ -11,25 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Shifts (Templates)
-        Schema::create('shifts', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 50);
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->timestamps();
-        });
-
-        // 2. Schedules (The Roster)
+        // 1. Schedules (The Roster)
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
-            $table->foreignId('shift_id')->constrained('shifts')->onDelete('cascade');
-            $table->date('date');
+
+            $table->enum('day_of_week', [
+                'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY',
+            ]);
+
+            $table->time('start_time');
+            $table->time('end_time');
+
             $table->timestamps();
 
-            // Unique constraint: One shift per employee per day
-            $table->unique(['employee_id', 'date']);
+            // Unique constraint: An employee cannot have two different schedules for the same day of the week.
+            $table->unique(['employee_id', 'day_of_week']);
         });
     }
 
@@ -39,6 +36,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('schedules');
-        Schema::dropIfExists('shifts');
     }
 };
