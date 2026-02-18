@@ -107,7 +107,6 @@ class AttendanceService
     public function clockOut(Employee $employee): array
     {
         return DB::transaction(function () use ($employee) {
-            // Fix: Find the latest attendance record where clock_out is NULL (Overnight Shift support)
             $attendance = Attendance::where('employee_id', $employee->id)
                 ->whereNull('clock_out')
                 ->latest('clock_in')
@@ -165,7 +164,7 @@ class AttendanceService
         Attendance::whereNull('clock_out')
             ->where('date', '>=', now()->subDays(2))
             ->with('schedule')
-            ->chunk(100, function ($attendances) {
+            ->chunkById(100, function ($attendances) {
                 foreach ($attendances as $attendance) {
                     if (! $attendance->schedule) {
                         continue;
@@ -208,56 +207,56 @@ class AttendanceService
             return;
         }
 
-        Employee::query()->cursor()->each(function ($employee) use ($dateStr, $dayName) {
-            $schedule = Schedule::where('employee_id', $employee->id)
-                ->where('day_of_week', $dayName)
-                ->first();
+        Employee::query()
+            ->with([
+                'schedules' => fn ($q) => $q->where('day_of_week', $dayName),
+                'attendances' => fn ($q) => $q->where('date', $dateStr),
+                'leaveRequests' => fn ($q) => $q->where('status', LeaveStatus::APPROVED)
+                    ->whereDate('start_date', '<=', $dateStr)
+                    ->whereDate('end_date', '>=', $dateStr),
+            ])
+            ->chunkById(100, function ($employees) use ($dateStr) {
+                foreach ($employees as $employee) {
+                    $schedule = $employee->schedules->first();
 
-            if (! $schedule) {
-                return;
-            }
+                    if (! $schedule) {
+                        continue;
+                    }
 
-            $attendanceExists = Attendance::where('employee_id', $employee->id)
-                ->where('date', $dateStr)
-                ->exists();
+                    if ($employee->attendances->isNotEmpty()) {
+                        continue;
+                    }
 
-            if ($attendanceExists) {
-                return;
-            }
+                    $onLeave = $employee->leaveRequests->isNotEmpty();
 
-            $onLeave = LeaveRequest::where('employee_id', $employee->id)
-                ->where('status', LeaveStatus::APPROVED)
-                ->whereDate('start_date', '<=', $dateStr)
-                ->whereDate('end_date', '>=', $dateStr)
-                ->exists();
+                    DB::transaction(function () use ($employee, $schedule, $dateStr, $onLeave) {
+                        if ($onLeave) {
+                            Attendance::firstOrCreate([
+                                'employee_id' => $employee->id,
+                                'date' => $dateStr,
+                            ], [
+                                'status' => AttendanceStatus::LEAVE,
+                                'schedule_id' => $schedule->id,
+                            ]);
 
-            DB::transaction(function () use ($employee, $schedule, $dateStr, $onLeave) {
-                if ($onLeave) {
-                    Attendance::firstOrCreate([
-                        'employee_id' => $employee->id,
-                        'date' => $dateStr,
-                    ], [
-                        'status' => AttendanceStatus::LEAVE,
-                        'schedule_id' => $schedule->id,
-                    ]);
+                            return;
+                        }
 
-                    return;
+                        Attendance::create([
+                            'employee_id' => $employee->id,
+                            'schedule_id' => $schedule->id,
+                            'date' => $dateStr,
+                            'status' => AttendanceStatus::ABSENT,
+                        ]);
+
+                        Fine::create([
+                            'employee_id' => $employee->id,
+                            'date' => $dateStr,
+                            'amount' => Fine::ABSENT_FINE,
+                            'reason' => 'Absent without notice',
+                        ]);
+                    });
                 }
-
-                $attendance = Attendance::create([
-                    'employee_id' => $employee->id,
-                    'schedule_id' => $schedule->id,
-                    'date' => $dateStr,
-                    'status' => AttendanceStatus::ABSENT,
-                ]);
-
-                Fine::create([
-                    'employee_id' => $employee->id,
-                    'date' => $dateStr,
-                    'amount' => Fine::ABSENT_FINE,
-                    'reason' => 'Absent without notice',
-                ]);
             });
-        });
     }
 }
