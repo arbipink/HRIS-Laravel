@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\AttendanceStatus;
 use App\Enums\LeaveStatus;
 use App\Models\Attendance;
+use App\Models\AttendanceSetting;
 use App\Models\Employee;
 use App\Models\Fine;
 use App\Models\Holiday;
@@ -21,6 +22,7 @@ class AttendanceService
     public function clockIn(Employee $employee): array
     {
         return DB::transaction(function () use ($employee) {
+            $settings = AttendanceSetting::getSettings();
             $now = now();
             $todayDate = $now->toDateString();
 
@@ -61,7 +63,7 @@ class AttendanceService
 
             // 5. Validation (e.g., 30 mins before)
             $scheduleStartTime = Carbon::parse($schedule->start_time)->setDateFrom($now);
-            $earliestClockIn = $scheduleStartTime->copy()->subMinutes(Fine::GRACE_PERIOD_MINUTES);
+            $earliestClockIn = $scheduleStartTime->copy()->subMinutes($settings->grace_period_minutes);
 
             if ($now->lessThan($earliestClockIn)) {
                 return [
@@ -86,13 +88,13 @@ class AttendanceService
                 Fine::create([
                     'employee_id' => $employee->id,
                     'date' => $todayDate,
-                    'amount' => Fine::LATE_FINE,
+                    'amount' => $settings->late_fine_amount,
                     'reason' => 'Late Arrival: Expected '.$scheduleStartTime->format('H:i').', arrived '.$now->format('H:i'),
                 ]);
 
                 return [
                     'success' => true,
-                    'message' => 'Clocked in (Late). Fine of '.number_format(Fine::LATE_FINE).' recorded.',
+                    'message' => 'Clocked in (Late). Fine of '.number_format($settings->late_fine_amount).' recorded.',
                     'late' => true,
                 ];
             }
@@ -161,10 +163,12 @@ class AttendanceService
      */
     protected function checkMissingClockOuts(): void
     {
+        $settings = AttendanceSetting::getSettings();
+
         Attendance::whereNull('clock_out')
             ->where('date', '>=', now()->subDays(2))
             ->with('schedule')
-            ->chunkById(100, function ($attendances) {
+            ->chunkById(100, function ($attendances) use ($settings) {
                 foreach ($attendances as $attendance) {
                     if (! $attendance->schedule) {
                         continue;
@@ -177,14 +181,14 @@ class AttendanceService
                         $shiftEnd->addDay();
                     }
 
-                    $cutoffTime = $shiftEnd->copy()->addHours(Fine::AUTO_CLOCK_OUT_GRACE_HOURS);
+                    $cutoffTime = $shiftEnd->copy()->addHours($settings->auto_clock_out_grace_hours);
 
                     if (now()->greaterThan($cutoffTime)) {
-                        DB::transaction(function () use ($attendance, $cutoffTime) {
+                        DB::transaction(function () use ($attendance, $cutoffTime, $settings) {
                             Fine::create([
                                 'employee_id' => $attendance->employee_id,
                                 'date' => $attendance->date,
-                                'amount' => Fine::NO_CLOCK_OUT_FINE,
+                                'amount' => $settings->no_clock_out_fine_amount,
                                 'reason' => 'Forgot to Clock Out',
                             ]);
 
@@ -200,6 +204,7 @@ class AttendanceService
      */
     public function checkAbsences(Carbon $date): void
     {
+        $settings = AttendanceSetting::getSettings();
         $dateStr = $date->toDateString();
         $dayName = strtoupper($date->format('l'));
 
@@ -215,7 +220,7 @@ class AttendanceService
                     ->whereDate('start_date', '<=', $dateStr)
                     ->whereDate('end_date', '>=', $dateStr),
             ])
-            ->chunkById(100, function ($employees) use ($dateStr) {
+            ->chunkById(100, function ($employees) use ($dateStr, $settings) {
                 foreach ($employees as $employee) {
                     $schedule = $employee->schedules->first();
 
@@ -229,7 +234,7 @@ class AttendanceService
 
                     $onLeave = $employee->leaveRequests->isNotEmpty();
 
-                    DB::transaction(function () use ($employee, $schedule, $dateStr, $onLeave) {
+                    DB::transaction(function () use ($employee, $schedule, $dateStr, $onLeave, $settings) {
                         if ($onLeave) {
                             Attendance::firstOrCreate([
                                 'employee_id' => $employee->id,
@@ -252,7 +257,7 @@ class AttendanceService
                         Fine::create([
                             'employee_id' => $employee->id,
                             'date' => $dateStr,
-                            'amount' => Fine::ABSENT_FINE,
+                            'amount' => $settings->absent_fine_amount,
                             'reason' => 'Absent without notice',
                         ]);
                     });
