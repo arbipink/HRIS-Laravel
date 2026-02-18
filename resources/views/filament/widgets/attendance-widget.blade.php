@@ -8,7 +8,7 @@
                         <span class="text-sm font-medium">No Employee Record</span>
                     </div>
                 @else
-                    @if (!$todayAttendance)
+                    @if (!$activeAttendance)
                         <x-filament::button 
                             wire:click="clockIn" 
                             color="success"
@@ -18,7 +18,7 @@
                             Clock In
                         </x-filament::button>
 
-                    @elseif (!$todayAttendance->clock_out)
+                    @elseif (!$activeAttendance->clock_out)
                         <x-filament::button 
                             wire:click="clockOut" 
                             color="danger"
@@ -47,18 +47,18 @@
                     Today's Status
                 </span>
 
-                @if ($todayAttendance)
+                @if ($activeAttendance)
                     <div class="flex items-center gap-3">
                         <x-filament::badge 
-                            :color="$todayAttendance->status->getColor()"
+                            :color="$activeAttendance->status->getColor()"
                             size="lg"
                         >
-                            {{ $todayAttendance->status->getLabel() }}
+                            {{ $activeAttendance->status->getLabel() }}
                         </x-filament::badge>
 
-                        @if($todayAttendance->clock_in)
+                        @if($activeAttendance->clock_in)
                             <span class="font-mono text-sm font-semibold text-gray-600 dark:text-gray-300">
-                                {{ \Carbon\Carbon::parse($todayAttendance->clock_in)->format('H:i') }}
+                                {{ \Carbon\Carbon::parse($activeAttendance->clock_in)->format('H:i') }}
                             </span>
                         @endif
                     </div>

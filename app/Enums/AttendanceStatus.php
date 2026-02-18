@@ -12,10 +12,11 @@ enum AttendanceStatus: string implements HasColor, HasLabel
     case ABSENT = 'ABSENT';
     case SICK = 'SICK';
     case LEAVE = 'LEAVE';
+    case EARLY_LEAVE = 'EARLY_LEAVE';
 
     public function getLabel(): ?string
     {
-        return ucfirst(strtolower($this->value));
+        return ucfirst(strtolower(str_replace('_', ' ', $this->value)));
     }
 
     public function getColor(): string|array|null
@@ -26,6 +27,7 @@ enum AttendanceStatus: string implements HasColor, HasLabel
             self::ABSENT => 'danger',
             self::SICK => 'info',
             self::LEAVE => 'gray',
+            self::EARLY_LEAVE => 'warning',
         };
     }
 }
