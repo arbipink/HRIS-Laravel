@@ -1,6 +1,46 @@
 <x-filament-widgets::widget>
     <x-filament::section>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-data="{
+            isLoading: false,
+            async handleAction(action) {
+                this.isLoading = true;
+                if (!navigator.geolocation) {
+                    $wire.notifyError('Geolocation is not supported by your browser.');
+                    this.isLoading = false;
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        $wire[action](latitude, longitude).finally(() => {
+                            this.isLoading = false;
+                        });
+                    },
+                    (error) => {
+                        let message = 'An unknown error occurred while retrieving your location.';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                message = 'Location access was denied. Please enable it to continue.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                message = 'Location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                message = 'The request to get your location timed out.';
+                                break;
+                        }
+                        $wire.notifyError(message);
+                        this.isLoading = false;
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
+                );
+            }
+        }">
 
             <div class="flex items-center">
                 @if (!$isEmployee)
@@ -10,22 +50,32 @@
                 @else
                     @if (!$activeAttendance)
                         <x-filament::button 
-                            wire:click="clockIn" 
+                            x-on:click="handleAction('clockIn')" 
                             color="success"
                             icon="heroicon-m-play"
                             class="w-full h-12 text-lg"
+                            x-bind:disabled="isLoading"
                         >
-                            Clock In
+                            <span x-show="!isLoading">Clock In</span>
+                            <span x-show="isLoading" class="flex items-center">
+                                <x-filament::loading-indicator class="h-5 w-5 mr-2" />
+                                Processing...
+                            </span>
                         </x-filament::button>
 
                     @elseif (!$activeAttendance->clock_out)
                         <x-filament::button 
-                            wire:click="clockOut" 
+                            x-on:click="handleAction('clockOut')" 
                             color="danger"
                             icon="heroicon-m-stop"
                             class="w-full h-12"
+                            x-bind:disabled="isLoading"
                         >
-                            Clock Out
+                            <span x-show="!isLoading">Clock Out</span>
+                            <span x-show="isLoading" class="flex items-center">
+                                <x-filament::loading-indicator class="h-5 w-5 mr-2" />
+                                Processing...
+                            </span>
                         </x-filament::button>
 
                     @else

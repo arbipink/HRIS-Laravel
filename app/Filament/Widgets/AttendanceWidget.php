@@ -12,12 +12,43 @@ class AttendanceWidget extends Widget
 {
     protected string $view = 'filament.widgets.attendance-widget';
 
-    public function clockIn(AttendanceService $service)
+    public function notifyError(string $message): void
+    {
+        Notification::make()
+            ->title($message)
+            ->danger()
+            ->send();
+    }
+
+    public function clockIn(AttendanceService $service, $lat = null, $lng = null)
     {
         $user = Auth::user();
 
         if (! $user->employee) {
             Notification::make()->title('Employee record not found.')->danger()->send();
+
+            return;
+        }
+
+        if (! $lat || ! $lng) {
+            Notification::make()->title('Location data is required to clock in.')->danger()->send();
+
+            return;
+        }
+
+        $workLocation = \App\Models\WorkLocation::where('is_active', true)->first();
+
+        if (! $workLocation) {
+            Notification::make()->title('No active work location found.')->danger()->send();
+
+            return;
+        }
+
+        if (! $workLocation->isWithinRadius($lat, $lng)) {
+            Notification::make()
+                ->title('You are outside the valid work area.')
+                ->danger()
+                ->send();
 
             return;
         }
@@ -37,12 +68,35 @@ class AttendanceWidget extends Widget
         }
     }
 
-    public function clockOut(AttendanceService $service)
+    public function clockOut(AttendanceService $service, $lat = null, $lng = null)
     {
         $user = Auth::user();
 
         if (! $user->employee) {
             Notification::make()->title('Employee record not found.')->danger()->send();
+
+            return;
+        }
+
+        if (! $lat || ! $lng) {
+            Notification::make()->title('Location data is required to clock out.')->danger()->send();
+
+            return;
+        }
+
+        $workLocation = \App\Models\WorkLocation::where('is_active', true)->first();
+
+        if (! $workLocation) {
+            Notification::make()->title('No active work location found.')->danger()->send();
+
+            return;
+        }
+
+        if (! $workLocation->isWithinRadius($lat, $lng)) {
+            Notification::make()
+                ->title('You are outside the valid work area.')
+                ->danger()
+                ->send();
 
             return;
         }
