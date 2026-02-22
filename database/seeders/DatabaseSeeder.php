@@ -9,7 +9,6 @@ use App\Models\Fine;
 use App\Models\Holiday;
 use App\Models\LeaveRequest;
 use App\Models\Schedule;
-use App\Models\Shift;
 use App\Models\User;
 use Carbon\Carbon;
 use Faker\Factory as Faker;
@@ -26,11 +25,11 @@ class DatabaseSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
 
+        // 1. Clean Database
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         User::truncate();
         Department::truncate();
         Employee::truncate();
-        Shift::truncate();
         Schedule::truncate();
         Attendance::truncate();
         LeaveRequest::truncate();
@@ -40,7 +39,8 @@ class DatabaseSeeder extends Seeder
 
         $this->command->info('Database cleaned. Starting seed.');
 
-        $departments = [
+        // 2. Create Departments
+        $departmentsList = [
             'Human Resources',
             'IT Development',
             'Finance',
@@ -51,23 +51,12 @@ class DatabaseSeeder extends Seeder
             'Warehouse',
         ];
 
-        $deptIds = [];
-        foreach ($departments as $dept) {
-            $d = Department::create(['name' => $dept]);
-            $deptIds[] = $d->id;
+        $deptObjs = [];
+        foreach ($departmentsList as $deptName) {
+            $deptObjs[$deptName] = Department::create(['name' => $deptName]);
         }
 
-        $shifts = [
-            ['name' => 'Morning Shift', 'start_time' => '08:00:00', 'end_time' => '17:00:00'],
-            ['name' => 'Night Shift', 'start_time' => '20:00:00', 'end_time' => '05:00:00'],
-        ];
-
-        $shiftIds = [];
-        foreach ($shifts as $shift) {
-            $s = Shift::create($shift);
-            $shiftIds[] = $s->id;
-        }
-
+        // 3. Create Holidays
         $holidays = [
             ['name' => 'Tahun Baru', 'date' => '2026-01-01'],
             ['name' => 'Hari Buruh', 'date' => '2026-05-01'],
@@ -77,6 +66,7 @@ class DatabaseSeeder extends Seeder
             Holiday::create($h);
         }
 
+        // 4. Helper to Create Employees
         $createEmployee = function ($name, $email, $role, $deptId = null) use ($faker) {
             $user = User::create([
                 'name' => $name,
@@ -94,83 +84,131 @@ class DatabaseSeeder extends Seeder
             ]);
         };
 
+        // 5. Create Users & Employees
         $admin = $createEmployee('Super Admin', 'admin@company.com', 'ADMIN', null);
-
-        $hrd = $createEmployee($faker->name(), 'hr@company.com', 'HRD', $deptIds[0]);
+        $hrd = $createEmployee($faker->name(), 'hr@company.com', 'HRD', $deptObjs['Human Resources']->id);
 
         $managers = [];
-        foreach ($departments as $index => $deptName) {
+        foreach ($departmentsList as $deptName) {
             $emailSlug = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $deptName));
-
             $managers[] = $createEmployee(
                 $faker->name(),
                 "manager.{$emailSlug}@company.com",
                 'MANAGER',
-                $deptIds[$index]
+                $deptObjs[$deptName]->id
             );
         }
 
         $employees = [];
+        // Create 50 random employees
         for ($i = 1; $i <= 50; $i++) {
             $firstName = $faker->firstName();
+            $randomDept = $deptObjs[$faker->randomElement($departmentsList)];
+
             $employees[] = $createEmployee(
                 $faker->name(),
                 strtolower($firstName)."{$i}@company.com",
                 'EMPLOYEE',
-                $faker->randomElement($deptIds)
+                $randomDept->id
             );
         }
 
         $allEmployees = array_merge([$admin, $hrd], $managers, $employees);
 
-        $startDate = Carbon::now()->subDays(30);
-        $endDate = Carbon::now()->addDays(7);
+        // 6. Create RECURRING Schedules (The New Logic)
+        $daysOfWeek = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY']; // Weekend off by default
 
         foreach ($allEmployees as $emp) {
-            $current = $startDate->copy();
-            while ($current <= $endDate) {
-                if ($current->isWeekend()) {
-                    $current->addDay();
+            // Determine Shift Type based on Department
+            $isSecurity = $emp->department && $emp->department->name === 'Security';
 
-                    continue;
-                }
+            if ($isSecurity) {
+                // Security: Overnight Shift (22:00 - 04:00)
+                // They work Mon-Sun usually, but let's give them Mon-Fri for simplicity or randomize
+                $workDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+                $startTime = '22:00:00';
+                $endTime = '04:00:00';
+            } else {
+                // Office: Normal Shift (08:00 - 17:00)
+                $workDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+                $startTime = '08:00:00';
+                $endTime = '17:00:00';
+            }
 
-                $schedule = Schedule::create([
+            foreach ($workDays as $day) {
+                Schedule::create([
                     'employee_id' => $emp->id,
-                    'shift_id' => $faker->randomElement($shiftIds),
-                    'date' => $current->format('Y-m-d'),
+                    'day_of_week' => $day,
+                    'start_time' => $startTime,
+                    'end_time' => $endTime,
                 ]);
-
-                if ($current <= Carbon::now()) {
-                    $rand = rand(1, 100);
-                    $status = 'PRESENT';
-                    $clockIn = $current->copy()->setTime(7, rand(30, 59));
-                    $clockOut = $current->copy()->setTime(17, rand(0, 30));
-                    $notes = null;
-
-                    if ($rand > 90) {
-                        $status = 'LATE';
-                        $clockIn = $current->copy()->setTime(8, rand(15, 59));
-                    } elseif ($rand > 96) {
-                        $status = 'ABSENT';
-                        $clockIn = null;
-                        $clockOut = null;
-                    }
-
-                    Attendance::create([
-                        'employee_id' => $emp->id,
-                        'schedule_id' => $schedule->id,
-                        'date' => $current->format('Y-m-d'),
-                        'clock_in' => $clockIn,
-                        'clock_out' => $clockOut,
-                        'status' => $status,
-                        'notes' => $notes,
-                    ]);
-                }
-                $current->addDay();
             }
         }
 
+        // 7. Generate Attendances based on Date Range
+        $startDate = Carbon::now()->subDays(30);
+        $endDate = Carbon::now(); // Up to today
+
+        $allEmployeesWithSchedules = Employee::with('schedules')->get();
+
+        $current = $startDate->copy();
+        while ($current <= $endDate) {
+            $dayName = strtoupper($current->format('l'));
+
+            foreach ($allEmployeesWithSchedules as $emp) {
+                $schedule = $emp->schedules->firstWhere('day_of_week', $dayName);
+
+                if (! $schedule) {
+                    continue;
+                }
+
+                // Randomize Attendance
+                $rand = rand(1, 100);
+                $status = 'PRESENT';
+                $notes = null;
+
+                // Parse start/end times
+                $schedStart = Carbon::parse($current->format('Y-m-d').' '.$schedule->start_time);
+                $schedEnd = Carbon::parse($current->format('Y-m-d').' '.$schedule->end_time);
+
+                // Handle Overnight Logic (if End Time < Start Time, it ends the next day)
+                if ($schedEnd->lt($schedStart)) {
+                    $schedEnd->addDay();
+                }
+
+                // Default: On Time
+                // Clock in: -15 mins to +5 mins
+                $clockIn = $schedStart->copy()->subMinutes(rand(0, 15))->addMinutes(rand(0, 5));
+                // Clock out: +0 mins to +30 mins
+                $clockOut = $schedEnd->copy()->addMinutes(rand(0, 30));
+
+                if ($rand > 85) {
+                    // Late
+                    $status = 'LATE';
+                    $clockIn = $schedStart->copy()->addMinutes(rand(15, 120)); // 15 mins to 2 hours late
+                } elseif ($rand > 95) {
+                    // Absent
+                    $status = 'ABSENT';
+                    $clockIn = null;
+                    $clockOut = null;
+                }
+
+                // Create the record
+                Attendance::create([
+                    'employee_id' => $emp->id,
+                    'schedule_id' => $schedule->id,
+                    'date' => $current->format('Y-m-d'),
+                    'clock_in' => $clockIn,
+                    'clock_out' => $clockOut,
+                    'status' => $status,
+                    'notes' => $notes,
+                ]);
+            }
+
+            $current->addDay();
+        }
+
+        // 8. Fines (unchanged logic)
         foreach ($allEmployees as $emp) {
             if (rand(1, 10) > 8) {
                 Fine::create([
@@ -182,21 +220,18 @@ class DatabaseSeeder extends Seeder
             }
         }
 
+        // 9. Leave Requests (unchanged logic)
         $hrdId = $hrd->id;
-
         foreach ($employees as $emp) {
-
             $manager = collect($managers)->firstWhere('department_id', $emp->department_id);
             $managerId = $manager ? $manager->id : null;
 
-            for ($k = 0; $k < rand(1, 3); $k++) {
-
-                $startDate = Carbon::now()->subMonths(rand(1, 6))->subDays(rand(1, 20));
+            for ($k = 0; $k < rand(0, 2); $k++) {
+                $startLeave = Carbon::now()->subMonths(rand(1, 6))->subDays(rand(1, 20));
                 $daysTaken = rand(1, 3);
-                $endDate = $startDate->copy()->addDays($daysTaken - 1);
+                $endLeave = $startLeave->copy()->addDays($daysTaken - 1);
 
                 $chance = rand(1, 100);
-
                 $finalStatus = 'REJECTED';
                 $managerStatus = 'PENDING';
                 $hrdStatus = 'PENDING';
@@ -209,20 +244,14 @@ class DatabaseSeeder extends Seeder
                     $managerStatus = 'REJECTED';
                     $hrdStatus = 'PENDING';
                     $finalStatus = 'REJECTED';
-                } else {
-                    $managerStatus = 'APPROVED';
-                    $hrdStatus = 'REJECTED';
-                    $finalStatus = 'REJECTED';
                 }
 
                 LeaveRequest::create([
                     'employee_id' => $emp->id,
-                    'type' => $faker->randomElement(['ANNUAL', 'SICK', 'ANNUAL', 'ANNUAL']),
+                    'type' => $faker->randomElement(['ANNUAL', 'SICK']),
                     'reason' => $faker->sentence(6),
-                    'start_date' => $startDate->format('Y-m-d'),
-                    'end_date' => $endDate->format('Y-m-d'),
-                    'attachment_path' => null,
-
+                    'start_date' => $startLeave->format('Y-m-d'),
+                    'end_date' => $endLeave->format('Y-m-d'),
                     'status' => $finalStatus,
                     'manager_status' => $managerStatus,
                     'hrd_status' => $hrdStatus,

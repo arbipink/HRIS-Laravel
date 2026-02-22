@@ -2,17 +2,11 @@
 
 namespace App\Filament\Resources\Attendances;
 
-use App\Enums\AttendanceStatus;
 use App\Enums\EmployeeRole;
 use App\Filament\Resources\Attendances\Pages\ManageAttendances;
 use App\Models\Attendance;
 use BackedEnum;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -56,37 +50,12 @@ class AttendanceResource extends Resource
         return $query;
     }
 
-    public static function form(Schema $schema): Schema
-    {
-        return $schema
-            ->components([
-                TextInput::make('employee_id')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('schedule_id')
-                    ->numeric(),
-                DatePicker::make('date')
-                    ->required(),
-                DateTimePicker::make('clock_in'),
-                DateTimePicker::make('clock_out'),
-                Select::make('status')
-                    ->options(AttendanceStatus::class)
-                    ->default('ABSENT')
-                    ->required(),
-                Textarea::make('notes')
-                    ->columnSpanFull(),
-            ]);
-    }
-
     public static function infolist(Schema $schema): Schema
     {
         return $schema
             ->components([
-                TextEntry::make('employee_id')
-                    ->numeric(),
-                TextEntry::make('schedule_id')
-                    ->numeric()
-                    ->placeholder('-'),
+                TextColumn::make('employee.user.name')
+                    ->label('Employee'),
                 TextEntry::make('date')
                     ->date(),
                 TextEntry::make('clock_in')
@@ -113,11 +82,9 @@ class AttendanceResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('employee_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('schedule_id')
-                    ->numeric()
+                TextColumn::make('employee.user.name')
+                    ->label('Employee')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('date')
                     ->date()

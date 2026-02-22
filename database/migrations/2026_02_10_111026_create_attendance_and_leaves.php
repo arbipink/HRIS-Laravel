@@ -21,7 +21,7 @@ return new class extends Migration
             $table->timestamp('clock_in')->nullable();
             $table->timestamp('clock_out')->nullable();
 
-            $table->enum('status', ['PRESENT', 'LATE', 'ABSENT', 'SICK', 'LEAVE'])->default('ABSENT');
+            $table->enum('status', ['PRESENT', 'LATE', 'ABSENT', 'SICK', 'LEAVE', 'EARLY_LEAVE'])->default('ABSENT');
             $table->text('notes')->nullable();
             $table->timestamps();
 
