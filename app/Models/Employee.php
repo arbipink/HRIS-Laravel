@@ -16,12 +16,28 @@ class Employee extends Model
         'department_id',
         'role',
         'gender',
+        'ktp_photo_path',
+        'kk_photo_path',
+        'npwp_number',
+        'pas_photo_path',
+        'phone_number',
+        'address',
+        'home_latitude',
+        'home_longitude',
+        'bank_account_number',
+        'family_data',
         'remaining_leave_days',
     ];
 
-    protected $casts = [
-        'role' => EmployeeRole::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'role' => EmployeeRole::class,
+            'family_data' => 'array',
+            'home_latitude' => 'float',
+            'home_longitude' => 'float',
+        ];
+    }
 
     public function user()
     {

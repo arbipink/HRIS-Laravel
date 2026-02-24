@@ -25,6 +25,16 @@ return new class extends Migration
             $table->foreignId('department_id')->nullable()->constrained()->onDelete('set null');
             $table->enum('role', ['ADMIN', 'HRD', 'MANAGER', 'EMPLOYEE'])->default('EMPLOYEE');
             $table->enum('gender', ['PRIA', 'WANITA']);
+            $table->string('ktp_photo_path')->nullable();
+            $table->string('kk_photo_path')->nullable();
+            $table->string('npwp_number')->nullable();
+            $table->string('pas_photo_path')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->text('address')->nullable();
+            $table->decimal('home_latitude', 10, 8)->nullable();
+            $table->decimal('home_longitude', 11, 8)->nullable();
+            $table->string('bank_account_number')->nullable();
+            $table->json('family_data')->nullable();
             $table->unsignedTinyInteger('remaining_leave_days')->default(8);
             $table->softDeletes();
             $table->timestamps();

@@ -75,12 +75,38 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]);
 
+            // Format dummy family (JSON)
+            $familyData = [
+                [
+                    'name' => $faker->name(),
+                    'relation' => $faker->randomElement(['Suami', 'Istri', 'Ayah', 'Ibu', 'Anak']),
+                    'phone_number' => $faker->phoneNumber(),
+                    'emergency_contact' => true,
+                ],
+                [
+                    'name' => $faker->name(),
+                    'relation' => $faker->randomElement(['Saudara Kandung', 'Anak']),
+                    'phone_number' => $faker->phoneNumber(),
+                    'emergency_contact' => false,
+                ],
+            ];
+
             return Employee::create([
                 'user_id' => $user->id,
                 'department_id' => $deptId,
                 'role' => $role,
                 'gender' => $faker->randomElement(['PRIA', 'WANITA']),
                 'remaining_leave_days' => 12,
+                'ktp_photo_path' => 'uploads/documents/dummy_ktp.jpg',
+                'kk_photo_path' => 'uploads/documents/dummy_kk.jpg',
+                'npwp_number' => $faker->numerify('##.###.###.#-###.###'),
+                'pas_photo_path' => 'uploads/documents/dummy_pasfoto.jpg',
+                'phone_number' => $faker->phoneNumber(),
+                'address' => $faker->address(),
+                'home_latitude' => $faker->latitude(-11, 6),
+                'home_longitude' => $faker->longitude(95, 141),
+                'bank_account_number' => $faker->bankAccountNumber(),
+                'family_data' => json_encode($familyData),
             ]);
         };
 
