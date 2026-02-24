@@ -3,9 +3,11 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Attendance;
+use App\Models\WorkLocation;
 use App\Services\AttendanceService;
 use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class AttendanceWidget extends Widget
@@ -36,7 +38,7 @@ class AttendanceWidget extends Widget
             return;
         }
 
-        $workLocation = \App\Models\WorkLocation::where('is_active', true)->first();
+        $workLocation = WorkLocation::where('is_active', true)->first();
 
         if (! $workLocation) {
             Notification::make()->title('No active work location found.')->danger()->send();
@@ -84,7 +86,7 @@ class AttendanceWidget extends Widget
             return;
         }
 
-        $workLocation = \App\Models\WorkLocation::where('is_active', true)->first();
+        $workLocation = WorkLocation::where('is_active', true)->first();
 
         if (! $workLocation) {
             Notification::make()->title('No active work location found.')->danger()->send();
@@ -120,6 +122,7 @@ class AttendanceWidget extends Widget
     {
         $user = Auth::user();
         $activeAttendance = null;
+        $isEarly = false;
 
         if ($user && $user->employee) {
             // Find the most recent attendance that hasn't been clocked out yet,
@@ -131,11 +134,28 @@ class AttendanceWidget extends Widget
                 })
                 ->latest('clock_in')
                 ->first();
+
+            if ($activeAttendance && ! $activeAttendance->clock_out && $activeAttendance->schedule) {
+                $now = now();
+                $schedule = $activeAttendance->schedule;
+                $scheduleEndTime = Carbon::parse($schedule->end_time);
+                $clockInDate = Carbon::parse($activeAttendance->date);
+
+                $scheduleStartTime = Carbon::parse($schedule->start_time);
+                if ($scheduleEndTime->lessThan($scheduleStartTime)) {
+                    $scheduleEndTime = $scheduleEndTime->setDateFrom($clockInDate)->addDay();
+                } else {
+                    $scheduleEndTime = $scheduleEndTime->setDateFrom($clockInDate);
+                }
+
+                $isEarly = $now->lessThan($scheduleEndTime);
+            }
         }
 
         return [
             'activeAttendance' => $activeAttendance,
             'isEmployee' => (bool) ($user?->employee),
+            'isEarly' => $isEarly,
         ];
     }
 }

@@ -65,7 +65,7 @@
 
                     @elseif (!$activeAttendance->clock_out)
                         <x-filament::button 
-                            x-on:click="handleAction('clockOut')" 
+                            x-on:click="$dispatch('open-modal', { id: 'clock-out-confirmation' })" 
                             color="danger"
                             icon="heroicon-m-stop"
                             class="w-full h-12"
@@ -77,6 +77,29 @@
                                 Processing...
                             </span>
                         </x-filament::button>
+
+                        <x-filament::modal id="clock-out-confirmation">
+                            <x-slot name="heading">
+                                {{ $isEarly ? 'Early Clock Out' : 'Clock Out Confirmation' }}
+                            </x-slot>
+
+                            <x-slot name="description">
+                                @if($isEarly)
+                                    You are clocking out before your shift ends. This will be marked as <strong>Early Leave</strong>. Are you sure you want to proceed?
+                                @else
+                                    Are you sure you want to clock out for the day?
+                                @endif
+                            </x-slot>
+
+                            <div class="flex justify-end gap-3">
+                                <x-filament::button color="gray" x-on:click="$dispatch('close-modal', { id: 'clock-out-confirmation' })">
+                                    Cancel
+                                </x-filament::button>
+                                <x-filament::button color="danger" x-on:click="handleAction('clockOut'); $dispatch('close-modal', { id: 'clock-out-confirmation' })">
+                                    Confirm Clock Out
+                                </x-filament::button>
+                            </div>
+                        </x-filament::modal>
 
                     @else
                         <div class="flex w-full h-12 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
