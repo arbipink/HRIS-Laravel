@@ -47,9 +47,11 @@ return new class extends Migration
 
             $table->enum('manager_status', ['PENDING', 'APPROVED', 'REJECTED'])->default('PENDING');
             $table->foreignId('manager_id')->nullable()->constrained('employees')->onDelete('set null');
+            $table->text('manager_reason')->nullable();
 
             $table->enum('hrd_status', ['PENDING', 'APPROVED', 'REJECTED'])->default('PENDING');
             $table->foreignId('hrd_id')->nullable()->constrained('employees')->onDelete('set null');
+            $table->text('hrd_reason')->nullable();
 
             $table->timestamps();
         });

@@ -17,6 +17,7 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
@@ -198,12 +199,18 @@ class LeaveRequestResource extends Resource
                 TextEntry::make('manager.user.name')
                     ->label('Manager')
                     ->placeholder('-'),
+                TextEntry::make('manager_reason')
+                    ->label('Manager Reason')
+                    ->visible(fn (LeaveRequest $record) => $record->manager_reason),
                 TextEntry::make('hrd_status')
                     ->badge()
                     ->visible(fn (LeaveRequest $record) => $record->hrd_status !== LeaveStatus::PENDING),
                 TextEntry::make('hrd.user.name')
                     ->label('HRD')
                     ->placeholder('-'),
+                TextEntry::make('hrd_reason')
+                    ->label('HRD Reason')
+                    ->visible(fn (LeaveRequest $record) => $record->hrd_reason),
                 TextEntry::make('created_at')
                     ->dateTime()
                     ->placeholder('-'),
@@ -305,15 +312,23 @@ class LeaveRequestResource extends Resource
                 Action::make('approve')
                     ->icon(Heroicon::Check)
                     ->color('success')
-                    ->action(function (LeaveRequest $record) {
+                    ->schema([
+                        Textarea::make('reason')
+                            ->label('Reason')
+                            ->placeholder('Optional reason for approval...')
+                            ->rows(3),
+                    ])
+                    ->action(function (LeaveRequest $record, array $data) {
                         $employee = Auth::user()?->employee;
 
                         if ($employee->role === EmployeeRole::MANAGER) {
                             $record->manager_status = LeaveStatus::APPROVED;
                             $record->manager_id = $employee->id;
+                            $record->manager_reason = $data['reason'];
                         } elseif ($employee->role === EmployeeRole::HRD) {
                             $record->hrd_status = LeaveStatus::APPROVED;
                             $record->hrd_id = $employee->id;
+                            $record->hrd_reason = $data['reason'];
                         }
 
                         if ($record->manager_status === LeaveStatus::APPROVED && $record->hrd_status === LeaveStatus::APPROVED) {
@@ -338,15 +353,24 @@ class LeaveRequestResource extends Resource
                 Action::make('reject')
                     ->icon(Heroicon::XMark)
                     ->color('danger')
-                    ->action(function (LeaveRequest $record) {
+                    ->schema([
+                        Textarea::make('reason')
+                            ->label('Reason')
+                            ->placeholder('Provide a reason for rejection...')
+                            ->rows(3)
+                            ->required(),
+                    ])
+                    ->action(function (LeaveRequest $record, array $data) {
                         $employee = Auth::user()?->employee;
 
                         if ($employee->role === EmployeeRole::MANAGER) {
                             $record->manager_status = LeaveStatus::REJECTED;
                             $record->manager_id = $employee->id;
+                            $record->manager_reason = $data['reason'];
                         } elseif ($employee->role === EmployeeRole::HRD) {
                             $record->hrd_status = LeaveStatus::REJECTED;
                             $record->hrd_id = $employee->id;
+                            $record->hrd_reason = $data['reason'];
                         }
 
                         $record->status = LeaveStatus::REJECTED;

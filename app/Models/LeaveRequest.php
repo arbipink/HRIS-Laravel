@@ -23,6 +23,8 @@ class LeaveRequest extends Model
         'hrd_status',
         'manager_id',
         'hrd_id',
+        'manager_reason',
+        'hrd_reason',
     ];
 
     protected $casts = [
