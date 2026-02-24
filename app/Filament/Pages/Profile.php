@@ -37,6 +37,8 @@ class Profile extends Page implements HasForms
     {
         $user = Auth::user();
         $employee = $user->employee;
+        $lat = (float) ($employee?->home_latitude ?? -6.2088);
+        $lng = (float) ($employee?->home_longitude ?? 106.8456);
 
         $this->form->fill([
             'name' => $user->name,
@@ -52,6 +54,10 @@ class Profile extends Page implements HasForms
             'home_latitude' => $employee?->home_latitude,
             'home_longitude' => $employee?->home_longitude,
             'family_data' => $employee?->family_data,
+            'location' => [
+                'home_latitude' => $lat,
+                'home_longitude' => $lng,
+            ],
         ]);
     }
 
@@ -122,18 +128,22 @@ class Profile extends Page implements HasForms
                             ->live(onBlur: true),
                         MapPicker::make('location')
                             ->height(300)
-                            ->center(Auth::user()->employee?->home_latitude ?? -6.2088, Auth::user()->employee?->home_longitude ?? 106.8456)
+                            ->center(
+                                (float) (Auth::user()->employee?->home_latitude ?? -6.2088),
+                                (float) (Auth::user()->employee?->home_longitude ?? 106.8456)
+                            )
                             ->zoom(11)
                             ->autoCenter()
                             ->columnSpanFull()
-                            ->latitudeFieldName('home_latitude')
-                            ->longitudeFieldName('home_longitude')
+                            ->latitudeFieldName('home_latitude') // Custom key
+                            ->longitudeFieldName('home_longitude') // Custom key
                             ->dehydrated(false)
                             ->live()
                             ->afterStateUpdated(function ($state, Set $set) {
                                 if (is_array($state)) {
-                                    $set('home_latitude', $state['lat'] ?? $state['latitude'] ?? null);
-                                    $set('home_longitude', $state['lng'] ?? $state['longitude'] ?? null);
+                                    // Read from the custom keys the map is now using
+                                    $set('home_latitude', $state['home_latitude'] ?? null);
+                                    $set('home_longitude', $state['home_longitude'] ?? null);
                                 }
                             }),
                     ])->columns(2),

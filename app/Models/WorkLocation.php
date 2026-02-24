@@ -12,7 +12,7 @@ class WorkLocation extends Model
         'latitude',
         'longitude',
         'radius',
-        'is_active'
+        'is_active',
     ];
 
     public function isWithinRadius($userLat, $userLon): bool
@@ -25,7 +25,7 @@ class WorkLocation extends Model
         $a = sin($latDelta / 2) * sin($latDelta / 2) +
              cos(deg2rad($this->latitude)) * cos(deg2rad($userLat)) *
              sin($lonDelta / 2) * sin($lonDelta / 2);
-             
+
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         $distance = $earthRadius * $c;
 

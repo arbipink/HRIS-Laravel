@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Employees;
 
 use App\Enums\EmployeeRole;
-use App\Filament\Resources\Employees\Pages\ManageEmployees;
+use App\Filament\Resources\Employees\Pages;
 use App\Models\Employee;
 use BackedEnum;
 use EduardoRibeiroDev\FilamentLeaflet\Fields\MapPicker;
@@ -123,10 +123,11 @@ class EmployeeResource extends Resource
                             ->latitudeFieldName('home_latitude')
                             ->longitudeFieldName('home_longitude')
                             ->dehydrated(false)
+                            ->live()
                             ->afterStateUpdated(function ($state, Set $set) {
                                 if (is_array($state)) {
-                                    $set('home_latitude', $state['lat'] ?? $state['latitude'] ?? null);
-                                    $set('home_longitude', $state['lng'] ?? $state['longitude'] ?? null);
+                                    $set('home_latitude', $state['home_latitude'] ?? null);
+                                    $set('home_longitude', $state['home_longitude'] ?? null);
                                 }
                             }),
                     ])->columns(2),
@@ -263,7 +264,10 @@ class EmployeeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ManageEmployees::route('/'),
+            'index' => Pages\ListEmployees::route('/'),
+            'create' => Pages\CreateEmployee::route('/create'),
+            'view' => Pages\ViewEmployee::route('/{record}'),
+            'edit' => Pages\EditEmployee::route('/{record}/edit'),
         ];
     }
 

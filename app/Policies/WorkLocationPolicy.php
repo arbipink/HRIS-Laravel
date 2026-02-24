@@ -2,10 +2,9 @@
 
 namespace App\Policies;
 
+use App\Enums\EmployeeRole;
 use App\Models\User;
 use App\Models\WorkLocation;
-use App\Enums\EmployeeRole;
-use Illuminate\Auth\Access\Response;
 
 class WorkLocationPolicy
 {

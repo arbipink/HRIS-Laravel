@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Employee;
-use App\Models\Fine;
 use App\Models\Schedule;
 use App\Models\User;
 use App\Services\AttendanceService;
@@ -58,7 +57,7 @@ class AttendanceServiceTest extends TestCase
             'status' => AttendanceStatus::PRESENT,
         ]);
 
-        $service = new AttendanceService();
+        $service = new AttendanceService;
         $service->processAutoFines();
 
         $attendance->refresh();
@@ -82,7 +81,7 @@ class AttendanceServiceTest extends TestCase
             'end_time' => '17:00:00',
         ]);
 
-        $service = new AttendanceService();
+        $service = new AttendanceService;
         $service->checkAbsences($date);
 
         $this->assertDatabaseHas('attendances', [

@@ -5,9 +5,9 @@ namespace App\Providers;
 use App\Enums\EmployeeRole;
 use App\Models\LeaveRequest;
 use App\Models\User;
-use Illuminate\Support\Facades\URL;
 use App\Observers\LeaveRequestObserver;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider

@@ -11,11 +11,11 @@ use App\Filament\Resources\WorkLocations\Schemas\WorkLocationInfolist;
 use App\Filament\Resources\WorkLocations\Tables\WorkLocationsTable;
 use App\Models\WorkLocation;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class WorkLocationResource extends Resource
 {

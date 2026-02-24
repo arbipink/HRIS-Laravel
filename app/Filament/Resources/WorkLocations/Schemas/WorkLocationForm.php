@@ -2,12 +2,11 @@
 
 namespace App\Filament\Resources\WorkLocations\Schemas;
 
-use Filament\Forms\Components\TextInput;
 use EduardoRibeiroDev\FilamentLeaflet\Fields\MapPicker;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Schema;
-use EduardoRibeiroDev\FilamentLeaflet\Enums\TileLayer;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 
 class WorkLocationForm
 {
@@ -21,11 +20,11 @@ class WorkLocationForm
                 TextInput::make('latitude')
                     ->required()
                     ->numeric()
-                    ->live(onBlur:true),
+                    ->live(onBlur: true),
                 TextInput::make('longitude')
                     ->required()
                     ->numeric()
-                    ->live(onBlur:true),
+                    ->live(onBlur: true),
                 TextInput::make('radius')
                     ->required()
                     ->numeric()
