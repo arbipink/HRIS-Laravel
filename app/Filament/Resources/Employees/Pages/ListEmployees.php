@@ -2,9 +2,15 @@
 
 namespace App\Filament\Resources\Employees\Pages;
 
+use App\Enums\EmployeeRole;
+use App\Exports\Sheets\EmployeesSheetExport;
 use App\Filament\Resources\Employees\EmployeeResource;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ListEmployees extends ListRecords
 {
@@ -13,6 +19,15 @@ class ListEmployees extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('downloadReport')
+                ->label('Download Employees Report')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->visible(fn (): bool => in_array(Auth::user()->employee?->role, [EmployeeRole::ADMIN, EmployeeRole::HRD]))
+                ->action(fn (): BinaryFileResponse => Excel::download(
+                    new EmployeesSheetExport,
+                    'employees-'.now()->format('Y-m-d').'.xlsx'
+                )),
             CreateAction::make(),
         ];
     }
