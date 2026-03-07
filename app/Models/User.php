@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\EmployeeRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -50,5 +51,19 @@ class User extends Authenticatable
     public function employee(): HasOne
     {
         return $this->hasOne(Employee::class);
+    }
+
+    public function hasRole(string|EmployeeRole $role): bool
+    {
+        if ($role instanceof EmployeeRole) {
+            $role = $role->value;
+        }
+
+        return $this->employee?->role?->value === $role;
+    }
+
+    public function fines()
+    {
+        return $this->hasManyThrough(Fine::class, Employee::class);
     }
 }

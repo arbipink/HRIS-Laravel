@@ -63,4 +63,9 @@ class Employee extends Model
     {
         return $this->hasMany(LeaveRequest::class);
     }
+
+    public function fines()
+    {
+        return $this->hasMany(Fine::class);
+    }
 }
