@@ -14,6 +14,8 @@ class AttendanceWidget extends Widget
 {
     protected string $view = 'filament.widgets.attendance-widget';
 
+    protected int|string|array $columnSpan = 1;
+
     public function notifyError(string $message): void
     {
         Notification::make()

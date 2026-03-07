@@ -106,7 +106,7 @@ class DatabaseSeeder extends Seeder
                 'home_latitude' => $faker->latitude(-11, 6),
                 'home_longitude' => $faker->longitude(95, 141),
                 'bank_account_number' => $faker->bankAccountNumber(),
-                'family_data' => json_encode($familyData),
+                'family_data' => $familyData,
             ]);
         };
 
