@@ -8,6 +8,8 @@ use App\Models\Employee;
 use App\Models\Fine;
 use App\Models\Holiday;
 use App\Models\LeaveRequest;
+use App\Models\User;
+use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +20,7 @@ class StatsOverviewWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
         $isCompanyWide = $user->hasRole(EmployeeRole::ADMIN) || $user->hasRole(EmployeeRole::HRD);
         $employeeId = $user->employee?->id;
@@ -52,13 +54,13 @@ class StatsOverviewWidget extends BaseWidget
         $diff = $currentTotal - $lastTotal;
         $isIncrease = $diff > 0;
 
-        $stat = Stat::make('Monthly Fines', 'Rp '.number_format($currentTotal, 0, ',', '.'))
-            ->description($isIncrease ? 'Increased from last month' : 'Decreased from last month')
+        $stat = Stat::make(__('widget.stats.fines.title'), 'Rp '.number_format($currentTotal, 0, ',', '.'))
+            ->description($isIncrease ? __('widget.stats.fines.increased') : __('widget.stats.fines.decreased'))
             ->descriptionIcon($isIncrease ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down')
             ->color($isIncrease ? 'danger' : 'success');
 
         if ($diff === 0) {
-            $stat->description('Same as last month')
+            $stat->description(__('widget.stats.fines.same'))
                 ->descriptionIcon('heroicon-m-minus')
                 ->color('gray');
         }
@@ -66,34 +68,34 @@ class StatsOverviewWidget extends BaseWidget
         return $stat;
     }
 
-    protected function getPendingLeaveRequestsStat(\App\Models\User $user): Stat
+    protected function getPendingLeaveRequestsStat(User $user): Stat
     {
         $employee = $user->employee;
         $role = $employee?->role;
         $query = LeaveRequest::query();
 
-        $description = 'Awaiting action';
+        $description = __('widget.stats.leave.pending.awaiting');
 
         if ($role === EmployeeRole::ADMIN) {
             $query->where('status', LeaveStatus::PENDING);
-            $description = 'Total pending company-wide';
+            $description = __('widget.stats.leave.pending.company_wide');
         } elseif ($role === EmployeeRole::HRD) {
             $query->where('manager_status', LeaveStatus::APPROVED)
                 ->where('hrd_status', LeaveStatus::PENDING);
-            $description = 'Pending your HR approval';
+            $description = __('widget.stats.leave.pending.hr_approval');
         } elseif ($role === EmployeeRole::MANAGER) {
             $query->where('manager_status', LeaveStatus::PENDING)
                 ->whereHas('employee', fn ($q) => $q->where('department_id', $employee->department_id));
-            $description = 'Pending your dept approval';
+            $description = __('widget.stats.leave.pending.dept_approval');
         } else {
             $query->where('employee_id', $employee?->id)
                 ->where('status', LeaveStatus::PENDING);
-            $description = 'Your pending requests';
+            $description = __('widget.stats.leave.pending.your_requests');
         }
 
         $count = $query->count();
 
-        return Stat::make('Pending Leave Requests', $count)
+        return Stat::make(__('widget.stats.leave.pending.title'), $count)
             ->description($description)
             ->descriptionIcon('heroicon-m-clock')
             ->color($count > 0 ? 'warning' : 'gray');
@@ -104,16 +106,16 @@ class StatsOverviewWidget extends BaseWidget
         if ($isCompanyWide) {
             $average = Employee::query()->avg('remaining_leave_days') ?? 0;
 
-            return Stat::make('Avg. Remaining Leave', round($average, 1).' Days')
-                ->description('Across all employees')
+            return Stat::make(__('widget.stats.leave.remaining.avg_title'), round($average, 1).' '.__('widget.stats.leave.remaining.days'))
+                ->description(__('widget.stats.leave.remaining.avg_description'))
                 ->descriptionIcon('heroicon-m-user-group')
                 ->color('info');
         }
 
         $remaining = $employee?->remaining_leave_days ?? 0;
 
-        return Stat::make('Your Remaining Leave', $remaining.' Days')
-            ->description('Annual leave balance')
+        return Stat::make(__('widget.stats.leave.remaining.your_title'), $remaining.' '.__('widget.stats.leave.remaining.days'))
+            ->description(__('widget.stats.leave.remaining.your_description'))
             ->descriptionIcon('heroicon-m-calendar-days')
             ->color($remaining > 5 ? 'success' : ($remaining > 0 ? 'warning' : 'danger'));
     }
@@ -132,13 +134,13 @@ class StatsOverviewWidget extends BaseWidget
         $count = $upcomingHolidays->count();
         $nearestHoliday = $upcomingHolidays->first();
 
-        $description = 'No more holidays this month';
+        $description = __('widget.stats.holidays.none');
         if ($nearestHoliday) {
-            $date = \Carbon\Carbon::parse($nearestHoliday->date)->format('M j');
-            $description = "Next: {$nearestHoliday->name} ({$date})";
+            $date = Carbon::parse($nearestHoliday->date)->format('M j');
+            $description = __('widget.stats.holidays.next', ['name' => $nearestHoliday->name, 'date' => $date]);
         }
 
-        return Stat::make('Holidays This Month', $count)
+        return Stat::make(__('widget.stats.holidays.title'), $count)
             ->description($description)
             ->descriptionIcon('heroicon-m-calendar')
             ->color('primary');

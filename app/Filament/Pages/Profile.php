@@ -29,6 +29,11 @@ class Profile extends Page implements HasForms
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::UserCircle;
 
+    public function getTitle(): string
+    {
+        return __('page.profile.title');
+    }
+
     protected string $view = 'filament.pages.profile';
 
     public ?array $data = [];
@@ -65,65 +70,73 @@ class Profile extends Page implements HasForms
     {
         return $schema
             ->schema([
-                Section::make('Account Information')
-                    ->description('Update your account login details.')
+                Section::make(__('page.profile.sections.account.title'))
+                    ->description(__('page.profile.sections.account.description'))
                     ->schema([
                         TextInput::make('name')
+                            ->label(__('page.profile.fields.name'))
                             ->required()
                             ->maxLength(255),
 
                         TextInput::make('email')
+                            ->label(__('page.profile.fields.email'))
                             ->email()
                             ->required()
                             ->unique(table: 'users', ignorable: Auth::user()),
                     ])->columns(2),
 
-                Section::make('Personal Details')
-                    ->description('Update your personal information.')
+                Section::make(__('page.profile.sections.personal.title'))
+                    ->description(__('page.profile.sections.personal.description'))
                     ->schema([
                         Select::make('gender')
+                            ->label(__('resource.employee.fields.gender'))
                             ->options([
-                                'PRIA' => 'PRIA',
-                                'WANITA' => 'WANITA',
+                                'PRIA' => __('resource.employee.options.gender.male'),
+                                'WANITA' => __('resource.employee.options.gender.female'),
                             ])
                             ->native(false),
                         TextInput::make('phone_number')
+                            ->label(__('resource.employee.fields.phone_number'))
                             ->tel()
                             ->maxLength(20),
                         TextInput::make('npwp_number')
-                            ->label('NPWP Number')
+                            ->label(__('resource.employee.fields.npwp_number'))
                             ->maxLength(20),
                         TextInput::make('bank_account_number')
+                            ->label(__('resource.employee.fields.bank_account_number'))
                             ->maxLength(30),
                         Textarea::make('address')
+                            ->label(__('resource.employee.fields.address'))
                             ->columnSpanFull(),
                     ])->columns(2),
 
-                Section::make('Documents & Photos')
-                    ->description('Upload your identity documents and photos.')
+                Section::make(__('page.profile.sections.documents.title'))
+                    ->description(__('page.profile.sections.documents.description'))
                     ->schema([
                         FileUpload::make('pas_photo_path')
-                            ->label('Pas Photo (4x6)')
+                            ->label(__('resource.employee.fields.pas_photo_path'))
                             ->image()
                             ->directory('employee-photos')
                             ->avatar(),
                         FileUpload::make('ktp_photo_path')
-                            ->label('KTP Photo')
+                            ->label(__('resource.employee.fields.ktp_photo_path'))
                             ->image()
                             ->directory('employee-docs'),
                         FileUpload::make('kk_photo_path')
-                            ->label('Family Card (KK) Photo')
+                            ->label(__('resource.employee.fields.kk_photo_path'))
                             ->image()
                             ->directory('employee-docs'),
                     ])->columns(3),
 
-                Section::make('Home Location')
-                    ->description('Specify your home location on the map.')
+                Section::make(__('page.profile.sections.location.title'))
+                    ->description(__('page.profile.sections.location.description'))
                     ->schema([
                         TextInput::make('home_latitude')
+                            ->label(__('resource.employee.fields.home_latitude'))
                             ->numeric()
                             ->live(onBlur: true),
                         TextInput::make('home_longitude')
+                            ->label(__('resource.employee.fields.home_longitude'))
                             ->numeric()
                             ->live(onBlur: true),
                         MapPicker::make('location')
@@ -148,37 +161,40 @@ class Profile extends Page implements HasForms
                             }),
                     ])->columns(2),
 
-                Section::make('Family Data')
-                    ->description('Add your family members information.')
+                Section::make(__('page.profile.sections.family.title'))
+                    ->description(__('page.profile.sections.family.description'))
                     ->schema([
                         Repeater::make('family_data')
                             ->schema([
                                 TextInput::make('name')
+                                    ->label(__('resource.employee.fields.name'))
                                     ->required(),
                                 TextInput::make('relation')
+                                    ->label(__('resource.employee.fields.relation'))
                                     ->required(),
                                 TextInput::make('phone_number')
+                                    ->label(__('resource.employee.fields.phone_number'))
                                     ->tel(),
                                 Toggle::make('emergency_contact')
-                                    ->label('Emergency Contact')
+                                    ->label(__('resource.employee.fields.emergency_contact'))
                                     ->inline(false),
                             ])
                             ->columns(4)
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('Update Password')
-                    ->description('Leave empty if you do not want to change your password.')
+                Section::make(__('page.profile.sections.password.title'))
+                    ->description(__('page.profile.sections.password.description'))
                     ->schema([
                         TextInput::make('new_password')
-                            ->label('New Password')
+                            ->label(__('page.profile.fields.new_password'))
                             ->password()
                             ->rule(Password::default())
                             ->autocomplete('new-password')
                             ->dehydrated(false),
 
                         TextInput::make('new_password_confirmation')
-                            ->label('Confirm New Password')
+                            ->label(__('page.profile.fields.confirm_password'))
                             ->password()
                             ->same('new_password')
                             ->requiredWith('new_password')
@@ -225,7 +241,7 @@ class Profile extends Page implements HasForms
 
         Notification::make()
             ->success()
-            ->title('Profile updated successfully')
+            ->title(__('page.profile.notifications.saved'))
             ->send();
     }
 
@@ -233,7 +249,7 @@ class Profile extends Page implements HasForms
     {
         return [
             Action::make('save')
-                ->label(__('Save Changes'))
+                ->label(__('page.profile.actions.save'))
                 ->submit('save'),
         ];
     }
