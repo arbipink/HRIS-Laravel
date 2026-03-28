@@ -15,7 +15,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
-use UnitEnum;
 
 class AttendanceResource extends Resource
 {
@@ -23,7 +22,25 @@ class AttendanceResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::CheckBadge;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Operations';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.attendance');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.operations');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('models.singular.attendance');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('models.plural.attendance');
+    }
 
     public static function getEloquentQuery(): Builder
     {

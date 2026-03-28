@@ -14,7 +14,6 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Gate;
-use UnitEnum;
 
 class ManageAttendanceSettings extends Page implements HasForms
 {
@@ -22,11 +21,20 @@ class ManageAttendanceSettings extends Page implements HasForms
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Cog6Tooth;
 
-    protected static ?string $navigationLabel = 'Attendance Settings';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.attendance_settings');
+    }
 
-    protected static ?string $title = 'Attendance Settings';
+    public function getTitle(): string
+    {
+        return __('navigation.labels.attendance_settings');
+    }
 
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.settings');
+    }
 
     protected string $view = 'filament.pages.manage-attendance-settings';
 
@@ -50,45 +58,45 @@ class ManageAttendanceSettings extends Page implements HasForms
     {
         return $schema
             ->schema([
-                Section::make('Fine Amounts')
-                    ->description('Configure the fine amounts for various attendance violations.')
+                Section::make(__('page.attendance_settings.sections.fine_amounts.title'))
+                    ->description(__('page.attendance_settings.sections.fine_amounts.description'))
                     ->schema([
                         TextInput::make('late_fine_amount')
-                            ->label('Late Fine Amount')
+                            ->label(__('page.attendance_settings.fields.late_fine_amount'))
                             ->numeric()
                             ->prefix('Rp')
                             ->required()
                             ->minValue(0),
 
                         TextInput::make('absent_fine_amount')
-                            ->label('Absent Fine Amount')
+                            ->label(__('page.attendance_settings.fields.absent_fine_amount'))
                             ->numeric()
                             ->prefix('Rp')
                             ->required()
                             ->minValue(0),
 
                         TextInput::make('no_clock_out_fine_amount')
-                            ->label('No Clock-Out Fine Amount')
+                            ->label(__('page.attendance_settings.fields.no_clock_out_fine_amount'))
                             ->numeric()
                             ->prefix('Rp')
                             ->required()
                             ->minValue(0),
                     ])->columns(3),
 
-                Section::make('Grace Periods')
-                    ->description('Configure the grace periods for attendance.')
+                Section::make(__('page.attendance_settings.sections.grace_periods.title'))
+                    ->description(__('page.attendance_settings.sections.grace_periods.description'))
                     ->schema([
                         TextInput::make('grace_period_minutes')
-                            ->label('Grace Period (Minutes)')
+                            ->label(__('page.attendance_settings.fields.grace_period_minutes'))
                             ->numeric()
-                            ->suffix('minutes')
+                            ->suffix(__('page.attendance_settings.fields.minutes'))
                             ->required()
                             ->minValue(0),
 
                         TextInput::make('auto_clock_out_grace_hours')
-                            ->label('Auto Clock-Out Grace (Hours)')
+                            ->label(__('page.attendance_settings.fields.auto_clock_out_grace_hours'))
                             ->numeric()
-                            ->suffix('hours')
+                            ->suffix(__('page.attendance_settings.fields.hours'))
                             ->required()
                             ->minValue(0),
                     ])->columns(2),
@@ -106,7 +114,7 @@ class ManageAttendanceSettings extends Page implements HasForms
 
         Notification::make()
             ->success()
-            ->title('Settings updated successfully')
+            ->title(__('page.attendance_settings.notifications.saved'))
             ->send();
     }
 

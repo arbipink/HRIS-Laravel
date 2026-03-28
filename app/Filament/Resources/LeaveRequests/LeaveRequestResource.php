@@ -30,7 +30,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use UnitEnum;
 
 class LeaveRequestResource extends Resource
 {
@@ -38,7 +37,25 @@ class LeaveRequestResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::ArrowRightOnRectangle;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Management';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.leave_request');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.management');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('models.singular.leave_request');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('models.plural.leave_request');
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -304,17 +321,18 @@ class LeaveRequestResource extends Resource
                     ),
                 Action::make('download_pdf')
                     ->icon('heroicon-o-document-arrow-down')
-                    ->label('Download PDF')
+                    ->label(__('actions.download_pdf'))
                     ->color('info')
                     ->url(fn (LeaveRequest $record) => route('leave-requests.download-pdf', $record))
                     ->openUrlInNewTab()
                     ->visible(fn (LeaveRequest $record) => $record->status === LeaveStatus::APPROVED),
                 Action::make('approve')
                     ->icon(Heroicon::Check)
+                    ->label(__('actions.approve'))
                     ->color('success')
                     ->schema([
                         Textarea::make('reason')
-                            ->label('Reason')
+                            ->label(__('Reason'))
                             ->placeholder('Optional reason for approval...')
                             ->rows(3),
                     ])
@@ -352,10 +370,11 @@ class LeaveRequestResource extends Resource
                     }),
                 Action::make('reject')
                     ->icon(Heroicon::XMark)
+                    ->label(__('actions.reject'))
                     ->color('danger')
                     ->schema([
                         Textarea::make('reason')
-                            ->label('Reason')
+                            ->label(__('Reason'))
                             ->placeholder('Provide a reason for rejection...')
                             ->rows(3)
                             ->required(),

@@ -25,7 +25,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use UnitEnum;
 
 class ScheduleResource extends Resource
 {
@@ -33,7 +32,25 @@ class ScheduleResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Clock;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Operations';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.schedule');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.operations');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('models.singular.schedule');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('models.plural.schedule');
+    }
 
     public static function getEloquentQuery(): Builder
     {
@@ -136,7 +153,7 @@ class ScheduleResource extends Resource
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     BulkAction::make('update_times')
-                        ->label('Update Schedule Times')
+                        ->label(__('actions.update_schedule_times'))
                         ->icon(Heroicon::Clock)
                         ->schema([
                             TimePicker::make('start_time')

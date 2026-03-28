@@ -43,19 +43,24 @@ class EmployeeResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::UserGroup;
 
-    public static function getModelLabel(): string
+    public static function getNavigationLabel(): string
     {
-        return __('resource.employee.label');
-    }
-
-    public static function getPluralModelLabel(): string
-    {
-        return __('resource.employee.plural_label');
+        return __('navigation.labels.employee');
     }
 
     public static function getNavigationGroup(): ?string
     {
         return __('navigation.groups.organizations');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('models.singular.employee');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('models.plural.employee');
     }
 
     public static function form(Schema $schema): Schema

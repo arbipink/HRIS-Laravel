@@ -17,7 +17,6 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class DepartmentResource extends Resource
 {
@@ -25,7 +24,25 @@ class DepartmentResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Briefcase;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Organizations';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.department');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.organizations');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('models.singular.department');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('models.plural.department');
+    }
 
     public static function form(Schema $schema): Schema
     {

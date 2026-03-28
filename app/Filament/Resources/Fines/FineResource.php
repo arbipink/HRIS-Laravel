@@ -23,7 +23,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
-use UnitEnum;
 
 class FineResource extends Resource
 {
@@ -31,7 +30,25 @@ class FineResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::CurrencyDollar;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Management';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.fine');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.management');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('models.singular.fine');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('models.plural.fine');
+    }
 
     public static function getEloquentQuery(): Builder
     {

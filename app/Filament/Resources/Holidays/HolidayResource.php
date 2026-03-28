@@ -18,7 +18,6 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class HolidayResource extends Resource
 {
@@ -26,7 +25,25 @@ class HolidayResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Sun;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Management';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.holiday');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.management');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('models.singular.holiday');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('models.plural.holiday');
+    }
 
     public static function form(Schema $schema): Schema
     {

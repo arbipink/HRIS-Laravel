@@ -20,7 +20,7 @@ class ManageAttendances extends ManageRecords
     {
         return [
             Action::make('downloadReport')
-                ->label('Download Attendance Report')
+                ->label(__('actions.download_report', ['label' => __('models.singular.attendance')]))
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
                 ->visible(fn (): bool => in_array(Auth::user()->employee?->role, [EmployeeRole::ADMIN, EmployeeRole::HRD]))

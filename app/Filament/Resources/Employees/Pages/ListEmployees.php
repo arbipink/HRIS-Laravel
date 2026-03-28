@@ -20,7 +20,7 @@ class ListEmployees extends ListRecords
     {
         return [
             Action::make('downloadReport')
-                ->label('Download Employees Report')
+                ->label(__('actions.download_report', ['label' => __('models.plural.employee')]))
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
                 ->visible(fn (): bool => in_array(Auth::user()->employee?->role, [EmployeeRole::ADMIN, EmployeeRole::HRD]))

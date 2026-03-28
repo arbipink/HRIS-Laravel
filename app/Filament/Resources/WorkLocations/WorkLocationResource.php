@@ -15,7 +15,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class WorkLocationResource extends Resource
 {
@@ -23,7 +22,25 @@ class WorkLocationResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::MapPin;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.work_location');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.settings');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('models.singular.work_location');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('models.plural.work_location');
+    }
 
     public static function form(Schema $schema): Schema
     {

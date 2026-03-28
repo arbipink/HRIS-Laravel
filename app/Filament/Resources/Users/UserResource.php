@@ -18,7 +18,6 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class UserResource extends Resource
 {
@@ -26,7 +25,25 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Users;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Organizations';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.user');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.organizations');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('models.singular.user');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('models.plural.user');
+    }
 
     public static function form(Schema $schema): Schema
     {
