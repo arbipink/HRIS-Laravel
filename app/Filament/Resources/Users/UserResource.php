@@ -50,13 +50,16 @@ class UserResource extends Resource
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label(__('resource.user.fields.name'))
                     ->required(),
                 TextInput::make('email')
-                    ->label('Email address')
+                    ->label(__('resource.user.fields.email'))
                     ->email()
                     ->required(),
-                DateTimePicker::make('email_verified_at'),
+                DateTimePicker::make('email_verified_at')
+                    ->label(__('resource.user.fields.email_verified_at')),
                 TextInput::make('password')
+                    ->label(__('resource.user.fields.password'))
                     ->password()
                     ->required(),
             ]);
@@ -66,16 +69,20 @@ class UserResource extends Resource
     {
         return $schema
             ->components([
-                TextEntry::make('name'),
+                TextEntry::make('name')
+                    ->label(__('resource.user.fields.name')),
                 TextEntry::make('email')
-                    ->label('Email address'),
+                    ->label(__('resource.user.fields.email')),
                 TextEntry::make('email_verified_at')
+                    ->label(__('resource.user.fields.email_verified_at'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('created_at')
+                    ->label(__('resource.user.fields.created_at'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
+                    ->label(__('resource.user.fields.updated_at'))
                     ->dateTime()
                     ->placeholder('-'),
             ]);
@@ -86,18 +93,22 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label(__('resource.user.fields.name'))
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label(__('resource.user.fields.email'))
                     ->searchable(),
                 TextColumn::make('email_verified_at')
+                    ->label(__('resource.user.fields.email_verified_at'))
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label(__('resource.user.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label(__('resource.user.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

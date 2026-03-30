@@ -28,7 +28,7 @@ class AttendanceService
 
             // 1. Holiday Check
             if (Holiday::where('date', $todayDate)->exists()) {
-                return ['success' => false, 'message' => 'Today is a Holiday. Clock-in is not required.'];
+                return ['success' => false, 'message' => __('service.attendance.messages.holiday')];
             }
 
             // 2. Leave Check
@@ -39,7 +39,7 @@ class AttendanceService
                 ->exists();
 
             if ($onLeave) {
-                return ['success' => false, 'message' => 'You are on approved leave today.'];
+                return ['success' => false, 'message' => __('service.attendance.messages.on_leave')];
             }
 
             // 3. Schedule Check
@@ -49,7 +49,7 @@ class AttendanceService
                 ->first();
 
             if (! $schedule) {
-                return ['success' => false, 'message' => 'No schedule found for today.'];
+                return ['success' => false, 'message' => __('service.attendance.messages.no_schedule')];
             }
 
             // 4. Existing Attendance Check
@@ -58,7 +58,7 @@ class AttendanceService
                 ->first();
 
             if ($existingAttendance) {
-                return ['success' => false, 'message' => 'You have already clocked in today.'];
+                return ['success' => false, 'message' => __('service.attendance.messages.already_clocked_in')];
             }
 
             // 5. Validation (e.g., 30 mins before)
@@ -68,7 +68,7 @@ class AttendanceService
             if ($now->lessThan($earliestClockIn)) {
                 return [
                     'success' => false,
-                    'message' => 'Too early to clock in. Earliest is '.$earliestClockIn->format('H:i'),
+                    'message' => __('service.attendance.messages.too_early', ['time' => $earliestClockIn->format('H:i')]),
                 ];
             }
 
@@ -89,17 +89,20 @@ class AttendanceService
                     'employee_id' => $employee->id,
                     'date' => $todayDate,
                     'amount' => $settings->late_fine_amount,
-                    'reason' => 'Late Arrival: Expected '.$scheduleStartTime->format('H:i').', arrived '.$now->format('H:i'),
+                    'reason' => __('service.attendance.reasons.late_arrival', [
+                        'expected' => $scheduleStartTime->format('H:i'),
+                        'arrived' => $now->format('H:i'),
+                    ]),
                 ]);
 
                 return [
                     'success' => true,
-                    'message' => 'Clocked in (Late). Fine of '.number_format($settings->late_fine_amount).' recorded.',
+                    'message' => __('service.attendance.messages.clock_in_late', ['amount' => number_format($settings->late_fine_amount)]),
                     'late' => true,
                 ];
             }
 
-            return ['success' => true, 'message' => 'Clocked in successfully.'];
+            return ['success' => true, 'message' => __('service.attendance.messages.clock_in_success')];
         });
     }
 
@@ -115,12 +118,12 @@ class AttendanceService
                 ->first();
 
             if (! $attendance) {
-                return ['success' => false, 'message' => 'No active attendance record found.'];
+                return ['success' => false, 'message' => __('service.attendance.messages.no_active_attendance')];
             }
 
             $now = now();
             $schedule = $attendance->schedule;
-            $message = 'Clocked out successfully.';
+            $message = __('service.attendance.messages.clock_out_success');
 
             if ($schedule) {
                 $scheduleEndTime = Carbon::parse($schedule->end_time);
@@ -137,7 +140,7 @@ class AttendanceService
                 // Non-blocking Early Leave
                 if ($now->lessThan($scheduleEndTime)) {
                     $attendance->status = AttendanceStatus::EARLY_LEAVE;
-                    $message = 'Clocked out. Marked as Early Leave.';
+                    $message = __('service.attendance.messages.clock_out_early');
                 }
             }
 
@@ -189,7 +192,7 @@ class AttendanceService
                                 'employee_id' => $attendance->employee_id,
                                 'date' => $attendance->date,
                                 'amount' => $settings->no_clock_out_fine_amount,
-                                'reason' => 'Forgot to Clock Out',
+                                'reason' => __('service.attendance.reasons.forgot_clock_out'),
                             ]);
 
                             $attendance->update(['clock_out' => $cutoffTime]);
@@ -258,7 +261,7 @@ class AttendanceService
                             'employee_id' => $employee->id,
                             'date' => $dateStr,
                             'amount' => $settings->absent_fine_amount,
-                            'reason' => 'Absent without notice',
+                            'reason' => __('service.attendance.reasons.absent'),
                         ]);
                     });
                 }

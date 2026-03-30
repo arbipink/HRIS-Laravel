@@ -16,27 +16,35 @@ class WorkLocationsTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label(__('resource.work_location.fields.name'))
                     ->searchable(),
                 TextColumn::make('address')
+                    ->label(__('resource.work_location.fields.address'))
                     ->searchable(),
                 TextColumn::make('latitude')
+                    ->label(__('resource.work_location.fields.latitude'))
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('longitude')
+                    ->label(__('resource.work_location.fields.longitude'))
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('radius')
+                    ->label(__('resource.work_location.fields.radius'))
                     ->numeric()
                     ->sortable(),
                 IconColumn::make('is_active')
+                    ->label(__('resource.work_location.fields.is_active'))
                     ->boolean(),
                 TextColumn::make('created_at')
+                    ->label(__('resource.work_location.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label(__('resource.work_location.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

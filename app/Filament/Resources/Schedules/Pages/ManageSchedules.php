@@ -24,10 +24,10 @@ class ManageSchedules extends ManageRecords
     {
         $tabs = [];
 
-        $tabs['all'] = Tab::make('All Schedules');
+        $tabs['all'] = Tab::make(__('All Schedules'));
 
         foreach (DaysOfWeek::cases() as $day) {
-            $tabs[$day->value] = Tab::make($day->value)
+            $tabs[$day->value] = Tab::make($day->getLabel())
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('day_of_week', $day));
         }
 

@@ -14,7 +14,11 @@ enum LeaveStatus: string implements HasColor, HasIcon, HasLabel
 
     public function getLabel(): ?string
     {
-        return ucfirst(strtolower($this->value));
+        return match ($this) {
+            self::PENDING => __('enums.leave_status.pending'),
+            self::APPROVED => __('enums.leave_status.approved'),
+            self::REJECTED => __('enums.leave_status.rejected'),
+        };
     }
 
     public function getColor(): string|array|null

@@ -79,17 +79,20 @@ class FineResource extends Resource
         return $schema
             ->components([
                 Select::make('employee_id')
-                    ->label('Employee')
+                    ->label(__('resource.fine.fields.employee'))
                     ->options(Employee::with('user')->get()->pluck('user.name', 'id'))
                     ->searchable()
                     ->preload()
                     ->required(),
                 DatePicker::make('date')
+                    ->label(__('resource.fine.fields.date'))
                     ->required(),
                 TextInput::make('amount')
+                    ->label(__('resource.fine.fields.amount'))
                     ->required()
                     ->numeric(),
                 TextInput::make('reason')
+                    ->label(__('resource.fine.fields.reason'))
                     ->required(),
             ]);
     }
@@ -99,16 +102,21 @@ class FineResource extends Resource
         return $schema
             ->components([
                 TextEntry::make('employee.user.name')
-                    ->label('Employee Name'),
+                    ->label(__('resource.fine.fields.employee_name')),
                 TextEntry::make('date')
+                    ->label(__('resource.fine.fields.date'))
                     ->date(),
                 TextEntry::make('amount')
+                    ->label(__('resource.fine.fields.amount'))
                     ->numeric(),
-                TextEntry::make('reason'),
+                TextEntry::make('reason')
+                    ->label(__('resource.fine.fields.reason')),
                 TextEntry::make('created_at')
+                    ->label(__('resource.fine.fields.created_at'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
+                    ->label(__('resource.fine.fields.updated_at'))
                     ->dateTime()
                     ->placeholder('-'),
             ]);
@@ -119,22 +127,27 @@ class FineResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('employee.user.name')
-                    ->label('Employee')
+                    ->label(__('resource.fine.fields.employee'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('date')
+                    ->label(__('resource.fine.fields.date'))
                     ->date()
                     ->sortable(),
                 TextColumn::make('amount')
+                    ->label(__('resource.fine.fields.amount'))
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('reason')
+                    ->label(__('resource.fine.fields.reason'))
                     ->searchable(),
                 TextColumn::make('created_at')
+                    ->label(__('resource.fine.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label(__('resource.fine.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

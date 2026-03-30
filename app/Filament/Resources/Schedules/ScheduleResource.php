@@ -81,17 +81,20 @@ class ScheduleResource extends Resource
         return $schema
             ->components([
                 Select::make('employee_id')
-                    ->label('Employee')
+                    ->label(__('resource.schedule.fields.employee'))
                     ->options(Employee::with('user')->get()->pluck('user.name', 'id'))
                     ->searchable()
                     ->preload()
                     ->required(),
                 Select::make('day_of_week')
+                    ->label(__('resource.schedule.fields.day_of_week'))
                     ->options(DaysOfWeek::class)
                     ->required(),
                 TimePicker::make('start_time')
+                    ->label(__('resource.schedule.fields.start_time'))
                     ->required(),
                 TimePicker::make('end_time')
+                    ->label(__('resource.schedule.fields.end_time'))
                     ->required(),
             ]);
     }
@@ -101,17 +104,23 @@ class ScheduleResource extends Resource
         return $schema
             ->components([
                 TextEntry::make('employee.user.name')
+                    ->label(__('resource.schedule.fields.employee'))
                     ->numeric(),
                 TextEntry::make('day_of_week')
+                    ->label(__('resource.schedule.fields.day_of_week'))
                     ->badge(),
                 TextEntry::make('start_time')
+                    ->label(__('resource.schedule.fields.start_time'))
                     ->time(),
                 TextEntry::make('end_time')
+                    ->label(__('resource.schedule.fields.end_time'))
                     ->time(),
                 TextEntry::make('created_at')
+                    ->label(__('resource.schedule.fields.created_at'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
+                    ->label(__('resource.schedule.fields.updated_at'))
                     ->dateTime()
                     ->placeholder('-'),
             ]);
@@ -122,21 +131,27 @@ class ScheduleResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('employee.user.name')
+                    ->label(__('resource.schedule.fields.employee'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('day_of_week')
+                    ->label(__('resource.schedule.fields.day_of_week'))
                     ->badge(),
                 TextColumn::make('start_time')
+                    ->label(__('resource.schedule.fields.start_time'))
                     ->time()
                     ->sortable(),
                 TextColumn::make('end_time')
+                    ->label(__('resource.schedule.fields.end_time'))
                     ->time()
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label(__('resource.schedule.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label(__('resource.schedule.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

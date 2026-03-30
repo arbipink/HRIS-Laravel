@@ -62,14 +62,14 @@ class LeaveRequestResource extends Resource
         return $schema
             ->components([
                 Select::make('employee_id')
-                    ->label('Employee')
+                    ->label(__('resource.leave_request.fields.employee'))
                     ->options(Employee::with('user')->get()->pluck('user.name', 'id'))
                     ->default(Auth::user()->employee?->id)
                     ->disabled()
                     ->dehydrated()
                     ->required(),
                 Select::make('manager_id')
-                    ->label('Manager')
+                    ->label(__('resource.leave_request.fields.manager'))
                     ->options(Employee::with('user')->get()->pluck('user.name', 'id'))
                     ->default(function () {
                         $employee = Auth::user()->employee;
@@ -86,7 +86,7 @@ class LeaveRequestResource extends Resource
                     ->dehydrated()
                     ->required(),
                 Select::make('hrd_id')
-                    ->label('HRD')
+                    ->label(__('resource.leave_request.fields.hrd'))
                     ->options(
                         Employee::where('role', EmployeeRole::HRD)
                             ->with('user')
@@ -98,12 +98,14 @@ class LeaveRequestResource extends Resource
                     ->dehydrated()
                     ->required(),
                 Select::make('type')
+                    ->label(__('resource.leave_request.fields.type'))
                     ->options(LeaveType::class)
                     ->default('ANNUAL')
                     ->live()
                     ->required(),
 
                 TextInput::make('reason')
+                    ->label(__('resource.leave_request.fields.reason'))
                     ->required()
                     ->helperText(fn ($get) => match ($get('type') instanceof LeaveType ? $get('type')->value : $get('type')) {
                         'ANNUAL' => 'Syarat: Setelah masa kerja 12 bulan.',
@@ -118,6 +120,7 @@ class LeaveRequestResource extends Resource
                     }),
 
                 DatePicker::make('start_date')
+                    ->label(__('resource.leave_request.fields.start_date'))
                     ->required()
                     ->helperText(fn ($get) => match ($get('type') instanceof LeaveType ? $get('type')->value : $get('type')) {
                         'ANNUAL' => 'Jatah: 12 Hari per tahun.',
@@ -132,6 +135,7 @@ class LeaveRequestResource extends Resource
                     }),
 
                 DatePicker::make('end_date')
+                    ->label(__('resource.leave_request.fields.end_date'))
                     ->required()
                     ->afterOrEqual('start_date')
                     ->helperText(function ($get) {
@@ -176,6 +180,7 @@ class LeaveRequestResource extends Resource
                     ]),
 
                 FileUpload::make('attachment_path')
+                    ->label(__('resource.leave_request.fields.attachment'))
                     ->directory('leave-requests')
                     ->visibility('private')
                     ->acceptedFileTypes(['application/pdf', 'image/*'])
@@ -199,43 +204,52 @@ class LeaveRequestResource extends Resource
         return $schema
             ->components([
                 TextEntry::make('employee.user.name')
-                    ->label('Employee'),
+                    ->label(__('resource.leave_request.fields.employee')),
                 TextEntry::make('type')
+                    ->label(__('resource.leave_request.fields.type'))
                     ->badge(),
-                TextEntry::make('reason'),
+                TextEntry::make('reason')
+                    ->label(__('resource.leave_request.fields.reason')),
                 TextEntry::make('start_date')
+                    ->label(__('resource.leave_request.fields.start_date'))
                     ->date(),
                 TextEntry::make('end_date')
+                    ->label(__('resource.leave_request.fields.end_date'))
                     ->date(),
                 TextEntry::make('status')
+                    ->label(__('resource.leave_request.fields.status'))
                     ->badge()
                     ->visible(fn (LeaveRequest $record) => $record->status !== LeaveStatus::PENDING),
                 TextEntry::make('manager_status')
+                    ->label(__('resource.leave_request.fields.manager_status'))
                     ->badge()
                     ->visible(fn (LeaveRequest $record) => $record->manager_status !== LeaveStatus::PENDING),
                 TextEntry::make('manager.user.name')
-                    ->label('Manager')
+                    ->label(__('resource.leave_request.fields.manager'))
                     ->placeholder('-'),
                 TextEntry::make('manager_reason')
-                    ->label('Manager Reason')
+                    ->label(__('resource.leave_request.fields.manager_reason'))
                     ->visible(fn (LeaveRequest $record) => $record->manager_reason),
                 TextEntry::make('hrd_status')
+                    ->label(__('resource.leave_request.fields.hrd_status'))
                     ->badge()
                     ->visible(fn (LeaveRequest $record) => $record->hrd_status !== LeaveStatus::PENDING),
                 TextEntry::make('hrd.user.name')
-                    ->label('HRD')
+                    ->label(__('resource.leave_request.fields.hrd'))
                     ->placeholder('-'),
                 TextEntry::make('hrd_reason')
-                    ->label('HRD Reason')
+                    ->label(__('resource.leave_request.fields.hrd_reason'))
                     ->visible(fn (LeaveRequest $record) => $record->hrd_reason),
                 TextEntry::make('created_at')
+                    ->label(__('resource.leave_request.fields.created_at'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
+                    ->label(__('resource.leave_request.fields.updated_at'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('attachment_path')
-                    ->label('Attachment')
+                    ->label(__('resource.leave_request.fields.attachment'))
                     ->formatStateUsing(fn () => 'View Document')
                     ->icon('heroicon-o-document-text')
                     ->color('primary')
@@ -274,30 +288,38 @@ class LeaveRequestResource extends Resource
             })
             ->columns([
                 TextColumn::make('employee.user.name')
-                    ->label('Employee')
+                    ->label(__('resource.leave_request.fields.employee'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('type')
+                    ->label(__('resource.leave_request.fields.type'))
                     ->badge(),
                 TextColumn::make('start_date')
+                    ->label(__('resource.leave_request.fields.start_date'))
                     ->date()
                     ->sortable(),
                 TextColumn::make('end_date')
+                    ->label(__('resource.leave_request.fields.end_date'))
                     ->date()
                     ->sortable(),
                 TextColumn::make('status')
+                    ->label(__('resource.leave_request.fields.status'))
                     ->badge(),
                 TextColumn::make('manager_status')
+                    ->label(__('resource.leave_request.fields.manager_status'))
                     ->badge()
                     ->visible(fn () => in_array(Auth::user()?->employee?->role, [EmployeeRole::MANAGER, EmployeeRole::EMPLOYEE])),
                 TextColumn::make('hrd_status')
+                    ->label(__('resource.leave_request.fields.hrd_status'))
                     ->badge()
                     ->visible(fn () => in_array(Auth::user()?->employee?->role, [EmployeeRole::HRD, EmployeeRole::EMPLOYEE])),
                 TextColumn::make('created_at')
+                    ->label(__('resource.leave_request.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label(__('resource.leave_request.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -332,8 +354,8 @@ class LeaveRequestResource extends Resource
                     ->color('success')
                     ->schema([
                         Textarea::make('reason')
-                            ->label(__('Reason'))
-                            ->placeholder('Optional reason for approval...')
+                            ->label(__('resource.leave_request.fields.reason'))
+                            ->placeholder(__('resource.leave_request.placeholders.approval_reason'))
                             ->rows(3),
                     ])
                     ->action(function (LeaveRequest $record, array $data) {
@@ -374,8 +396,8 @@ class LeaveRequestResource extends Resource
                     ->color('danger')
                     ->schema([
                         Textarea::make('reason')
-                            ->label(__('Reason'))
-                            ->placeholder('Provide a reason for rejection...')
+                            ->label(__('resource.leave_request.fields.reason'))
+                            ->placeholder(__('resource.leave_request.placeholders.rejection_reason'))
                             ->rows(3)
                             ->required(),
                     ])

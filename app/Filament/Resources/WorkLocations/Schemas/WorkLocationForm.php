@@ -15,17 +15,22 @@ class WorkLocationForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label(__('resource.work_location.fields.name'))
                     ->required(),
-                TextInput::make('address'),
+                TextInput::make('address')
+                    ->label(__('resource.work_location.fields.address')),
                 TextInput::make('latitude')
+                    ->label(__('resource.work_location.fields.latitude'))
                     ->required()
                     ->numeric()
                     ->live(onBlur: true),
                 TextInput::make('longitude')
+                    ->label(__('resource.work_location.fields.longitude'))
                     ->required()
                     ->numeric()
                     ->live(onBlur: true),
                 TextInput::make('radius')
+                    ->label(__('resource.work_location.fields.radius'))
                     ->required()
                     ->numeric()
                     ->default(100),
@@ -46,6 +51,7 @@ class WorkLocationForm
                         }
                     }),
                 Toggle::make('is_active')
+                    ->label(__('resource.work_location.fields.is_active'))
                     ->required()
                     ->default(true),
             ]);

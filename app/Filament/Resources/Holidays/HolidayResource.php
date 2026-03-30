@@ -50,8 +50,10 @@ class HolidayResource extends Resource
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label(__('resource.holiday.fields.name'))
                     ->required(),
                 DatePicker::make('date')
+                    ->label(__('resource.holiday.fields.date'))
                     ->required(),
             ]);
     }
@@ -60,13 +62,17 @@ class HolidayResource extends Resource
     {
         return $schema
             ->components([
-                TextEntry::make('name'),
+                TextEntry::make('name')
+                    ->label(__('resource.holiday.fields.name')),
                 TextEntry::make('date')
+                    ->label(__('resource.holiday.fields.date'))
                     ->date(),
                 TextEntry::make('created_at')
+                    ->label(__('resource.holiday.fields.created_at'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
+                    ->label(__('resource.holiday.fields.updated_at'))
                     ->dateTime()
                     ->placeholder('-'),
             ]);
@@ -77,15 +83,19 @@ class HolidayResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label(__('resource.holiday.fields.name'))
                     ->searchable(),
                 TextColumn::make('date')
+                    ->label(__('resource.holiday.fields.date'))
                     ->date()
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label(__('resource.holiday.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label(__('resource.holiday.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

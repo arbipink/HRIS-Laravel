@@ -122,7 +122,7 @@ class ManageAttendanceSettings extends Page implements HasForms
     {
         return [
             Action::make('save')
-                ->label(__('Save Changes'))
+                ->label(__('actions.save_changes'))
                 ->submit('save'),
         ];
     }

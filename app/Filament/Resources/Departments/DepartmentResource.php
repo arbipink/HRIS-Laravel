@@ -49,6 +49,7 @@ class DepartmentResource extends Resource
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label(__('resource.department.fields.name'))
                     ->required(),
             ]);
     }
@@ -57,11 +58,14 @@ class DepartmentResource extends Resource
     {
         return $schema
             ->components([
-                TextEntry::make('name'),
+                TextEntry::make('name')
+                    ->label(__('resource.department.fields.name')),
                 TextEntry::make('created_at')
+                    ->label(__('resource.department.fields.created_at'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
+                    ->label(__('resource.department.fields.updated_at'))
                     ->dateTime()
                     ->placeholder('-'),
             ]);
@@ -72,12 +76,15 @@ class DepartmentResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label(__('resource.department.fields.name'))
                     ->searchable(),
                 TextColumn::make('created_at')
+                    ->label(__('resource.department.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label(__('resource.department.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

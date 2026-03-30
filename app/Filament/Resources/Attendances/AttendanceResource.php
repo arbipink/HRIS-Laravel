@@ -71,25 +71,32 @@ class AttendanceResource extends Resource
     {
         return $schema
             ->components([
-                TextColumn::make('employee.user.name')
-                    ->label('Employee'),
+                TextEntry::make('employee.user.name')
+                    ->label(__('resource.attendance.fields.employee')),
                 TextEntry::make('date')
+                    ->label(__('resource.attendance.fields.date'))
                     ->date(),
                 TextEntry::make('clock_in')
+                    ->label(__('resource.attendance.fields.clock_in'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('clock_out')
+                    ->label(__('resource.attendance.fields.clock_out'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('status')
+                    ->label(__('resource.attendance.fields.status'))
                     ->badge(),
                 TextEntry::make('notes')
+                    ->label(__('resource.attendance.fields.notes'))
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('created_at')
+                    ->label(__('resource.attendance.fields.created_at'))
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
+                    ->label(__('resource.attendance.fields.updated_at'))
                     ->dateTime()
                     ->placeholder('-'),
             ]);
@@ -100,25 +107,31 @@ class AttendanceResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('employee.user.name')
-                    ->label('Employee')
+                    ->label(__('resource.attendance.fields.employee'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('date')
+                    ->label(__('resource.attendance.fields.date'))
                     ->date()
                     ->sortable(),
                 TextColumn::make('clock_in')
+                    ->label(__('resource.attendance.fields.clock_in'))
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('clock_out')
+                    ->label(__('resource.attendance.fields.clock_out'))
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('status')
+                    ->label(__('resource.attendance.fields.status'))
                     ->badge(),
                 TextColumn::make('created_at')
+                    ->label(__('resource.attendance.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label(__('resource.attendance.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
