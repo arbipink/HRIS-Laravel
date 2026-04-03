@@ -225,5 +225,15 @@
     "enums.leave_status.pending": "Menunggu",
     "enums.leave_status.approved": "Disetujui",
     "enums.leave_status.rejected": "Ditolak",
+    "enums.attendance_status.present": "Hadir",
+    "enums.attendance_status.late": "Terlambat",
+    "enums.attendance_status.absent": "Alpa",
+    "enums.attendance_status.sick": "Sakit",
+    "enums.attendance_status.leave": "Cuti",
+    "enums.attendance_status.early_leave": "Pulang Awal",
+    "enums.employee_role.admin": "Administrator",
+    "enums.employee_role.hrd": "HR Department",
+    "enums.employee_role.manager": "Manajer",
+    "enums.employee_role.employee": "Staf",
     "All Schedules": "Semua Jadwal"
 }

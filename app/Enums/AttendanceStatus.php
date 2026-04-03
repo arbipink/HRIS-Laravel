@@ -16,7 +16,14 @@ enum AttendanceStatus: string implements HasColor, HasLabel
 
     public function getLabel(): ?string
     {
-        return ucfirst(strtolower(str_replace('_', ' ', $this->value)));
+        return match ($this) {
+            self::PRESENT => __('enums.attendance_status.present'),
+            self::LATE => __('enums.attendance_status.late'),
+            self::ABSENT => __('enums.attendance_status.absent'),
+            self::SICK => __('enums.attendance_status.sick'),
+            self::LEAVE => __('enums.attendance_status.leave'),
+            self::EARLY_LEAVE => __('enums.attendance_status.early_leave'),
+        };
     }
 
     public function getColor(): string|array|null

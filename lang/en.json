@@ -225,5 +225,15 @@
     "enums.leave_status.pending": "Pending",
     "enums.leave_status.approved": "Approved",
     "enums.leave_status.rejected": "Rejected",
+    "enums.attendance_status.present": "Present",
+    "enums.attendance_status.late": "Late",
+    "enums.attendance_status.absent": "Absent",
+    "enums.attendance_status.sick": "Sick",
+    "enums.attendance_status.leave": "Leave",
+    "enums.attendance_status.early_leave": "Early Leave",
+    "enums.employee_role.admin": "Administrator",
+    "enums.employee_role.hrd": "HR Department",
+    "enums.employee_role.manager": "Manager",
+    "enums.employee_role.employee": "Staff",
     "All Schedules": "All Schedules"
 }

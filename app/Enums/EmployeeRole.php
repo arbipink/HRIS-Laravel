@@ -15,10 +15,10 @@ enum EmployeeRole: string implements HasColor, HasLabel
     public function getLabel(): ?string
     {
         return match ($this) {
-            self::ADMIN => 'Administrator',
-            self::HRD => 'HR Department',
-            self::MANAGER => 'Manager',
-            self::EMPLOYEE => 'Staff',
+            self::ADMIN => __('enums.employee_role.admin'),
+            self::HRD => __('enums.employee_role.hrd'),
+            self::MANAGER => __('enums.employee_role.manager'),
+            self::EMPLOYEE => __('enums.employee_role.employee'),
         };
     }
 
