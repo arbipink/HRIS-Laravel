@@ -7,6 +7,7 @@ use App\Exports\Sheets\LeaveRequestsSheetExport;
 use App\Filament\Resources\LeaveRequests\LeaveRequestResource;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Pages\ManageRecords;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -24,8 +25,16 @@ class ManageLeaveRequests extends ManageRecords
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
                 ->visible(fn (): bool => in_array(Auth::user()->employee?->role, [EmployeeRole::ADMIN, EmployeeRole::HRD]))
-                ->action(fn (): BinaryFileResponse => Excel::download(
-                    new LeaveRequestsSheetExport,
+                ->form([
+                    DatePicker::make('from_date')
+                        ->label(__('fields.from_date'))
+                        ->default(now()->subDays(30)->toDateString()),
+                    DatePicker::make('to_date')
+                        ->label(__('fields.to_date'))
+                        ->default(now()->toDateString()),
+                ])
+                ->action(fn (array $data): BinaryFileResponse => Excel::download(
+                    new LeaveRequestsSheetExport($data['from_date'], $data['to_date']),
                     'leave-requests-'.now()->format('Y-m-d').'.xlsx'
                 )),
             CreateAction::make(),

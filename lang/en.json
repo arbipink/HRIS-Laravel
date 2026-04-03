@@ -129,6 +129,8 @@
     "resource.work_location.fields.is_active": "Is Active",
     "resource.work_location.fields.created_at": "Created At",
     "resource.work_location.fields.updated_at": "Updated At",
+    "fields.from_date": "From Date",
+    "fields.to_date": "To Date",
     "widget.attendance.clock_in": "Clock In",
     "widget.attendance.clock_out": "Clock Out",
     "widget.attendance.processing": "Processing...",

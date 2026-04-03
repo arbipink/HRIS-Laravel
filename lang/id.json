@@ -129,6 +129,8 @@
     "resource.work_location.fields.is_active": "Aktif",
     "resource.work_location.fields.created_at": "Dibuat Pada",
     "resource.work_location.fields.updated_at": "Diperbarui Pada",
+    "fields.from_date": "Dari Tanggal",
+    "fields.to_date": "Sampai Tanggal",
     "widget.attendance.clock_in": "Jam Masuk",
     "widget.attendance.clock_out": "Jam Keluar",
     "widget.attendance.processing": "Memproses...",

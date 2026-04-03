@@ -11,11 +11,29 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 
 class LeaveRequestsSheetExport implements FromQuery, WithHeadings, WithMapping, WithTitle
 {
+    public function __construct(
+        public ?string $fromDate = null,
+        public ?string $toDate = null,
+    ) {}
+
     public function query(): Builder
     {
-        return LeaveRequest::query()
-            ->with(['employee.user'])
-            ->where('created_at', '>=', now()->subDays(30));
+        $query = LeaveRequest::query()
+            ->with(['employee.user']);
+
+        if ($this->fromDate) {
+            $query->whereDate('created_at', '>=', $this->fromDate);
+        }
+
+        if ($this->toDate) {
+            $query->whereDate('created_at', '<=', $this->toDate);
+        }
+
+        if (! $this->fromDate && ! $this->toDate) {
+            $query->where('created_at', '>=', now()->subDays(30));
+        }
+
+        return $query;
     }
 
     public function title(): string
