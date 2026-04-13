@@ -132,6 +132,7 @@ class AttendanceWidget extends Widget
             // Find the most recent attendance that hasn't been clocked out yet,
             // or today's attendance even if clocked out.
             $activeAttendance = Attendance::where('employee_id', $user->employee->id)
+                ->whereNotNull('clock_in')
                 ->where(function ($query) {
                     $query->whereNull('clock_out')
                         ->orWhere('date', now()->toDateString());

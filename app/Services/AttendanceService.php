@@ -113,6 +113,7 @@ class AttendanceService
     {
         return DB::transaction(function () use ($employee) {
             $attendance = Attendance::where('employee_id', $employee->id)
+                ->whereNotNull('clock_in') 
                 ->whereNull('clock_out')
                 ->latest('clock_in')
                 ->first();
