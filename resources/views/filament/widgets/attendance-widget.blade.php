@@ -5,7 +5,7 @@
             async handleAction(action) {
                 this.isLoading = true;
                 if (!navigator.geolocation) {
-                    $wire.notifyError('Geolocation is not supported by your browser.');
+                    $wire.notifyError('{{ __("widget.attendance.notifications.geolocation_not_supported") }}');
                     this.isLoading = false;
                     return;
                 }
@@ -18,16 +18,16 @@
                         });
                     },
                     (error) => {
-                        let message = 'An unknown error occurred while retrieving your location.';
+                        let message = '{{ __("widget.attendance.notifications.location_unknown_error") }}';
                         switch(error.code) {
                             case error.PERMISSION_DENIED:
-                                message = 'Location access was denied. Please enable it to continue.';
+                                message = '{{ __("widget.attendance.notifications.location_permission_denied") }}';
                                 break;
                             case error.POSITION_UNAVAILABLE:
-                                message = 'Location information is unavailable.';
+                                message = '{{ __("widget.attendance.notifications.location_unavailable") }}';
                                 break;
                             case error.TIMEOUT:
-                                message = 'The request to get your location timed out.';
+                                message = '{{ __("widget.attendance.notifications.location_timeout") }}';
                                 break;
                         }
                         $wire.notifyError(message);

@@ -31,13 +31,13 @@ class AttendanceWidget extends Widget
         $user = Auth::user();
 
         if (! $user->employee) {
-            Notification::make()->title('Employee record not found.')->danger()->send();
+            Notification::make()->title(__('widget.attendance.notifications.employee_not_found'))->danger()->send();
 
             return;
         }
 
         if (! $lat || ! $lng) {
-            Notification::make()->title('Location data is required to clock in.')->danger()->send();
+            Notification::make()->title(__('widget.attendance.notifications.location_required_in'))->danger()->send();
 
             return;
         }
@@ -45,14 +45,14 @@ class AttendanceWidget extends Widget
         $workLocation = WorkLocation::where('is_active', true)->first();
 
         if (! $workLocation) {
-            Notification::make()->title('No active work location found.')->danger()->send();
+            Notification::make()->title(__('widget.attendance.notifications.no_active_location'))->danger()->send();
 
             return;
         }
 
         if (! $workLocation->isWithinRadius($lat, $lng)) {
             Notification::make()
-                ->title('You are outside the valid work area.')
+                ->title(__('widget.attendance.notifications.outside_area'))
                 ->danger()
                 ->send();
 
@@ -79,13 +79,13 @@ class AttendanceWidget extends Widget
         $user = Auth::user();
 
         if (! $user->employee) {
-            Notification::make()->title('Employee record not found.')->danger()->send();
+            Notification::make()->title(__('widget.attendance.notifications.employee_not_found'))->danger()->send();
 
             return;
         }
 
         if (! $lat || ! $lng) {
-            Notification::make()->title('Location data is required to clock out.')->danger()->send();
+            Notification::make()->title(__('widget.attendance.notifications.location_required_out'))->danger()->send();
 
             return;
         }
@@ -93,14 +93,14 @@ class AttendanceWidget extends Widget
         $workLocation = WorkLocation::where('is_active', true)->first();
 
         if (! $workLocation) {
-            Notification::make()->title('No active work location found.')->danger()->send();
+            Notification::make()->title(__('widget.attendance.notifications.no_active_location'))->danger()->send();
 
             return;
         }
 
         if (! $workLocation->isWithinRadius($lat, $lng)) {
             Notification::make()
-                ->title('You are outside the valid work area.')
+                ->title(__('widget.attendance.notifications.outside_area'))
                 ->danger()
                 ->send();
 
