@@ -18,12 +18,12 @@ echo "📥 Installing Composer dependencies inside PHP container..."
 docker compose exec php composer install
 
 echo "🔑 Generating application key..."
-docker compose exec php php artisan key:generate --skip-if-set || true
+docker compose exec php php artisan key:generate
 
 sleep 10
 
 echo "🗄️ Running database migrations and seeders..."
-docker compose exec php php artisan migrate --seed
+docker compose exec php php artisan migrate:fresh --seed
 
 echo "🎨 Compiling frontend assets..."
 if [ -x "$(command -v npm)" ]; then

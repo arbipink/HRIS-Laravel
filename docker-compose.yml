@@ -30,8 +30,8 @@ services:
     image: nginx:alpine
     container_name: nginx-container
     restart: always
-    #ports: # Uncomment this line if you want to run it locally
-    #  - '80:80' # Uncomment this line if you want to run it locally
+    ports: # Comment this line if you want to run it on server
+      - '80:80' # Comment this line if you want to run it on server
     volumes:
       - ./:/var/www/html
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
@@ -42,10 +42,10 @@ services:
     image: 'jc21/nginx-proxy-manager:latest'
     container_name: npm-container
     restart: always
-    ports:
-      - '80:80' # Comment this line to run it locally
-      - '443:443' # Comment this line to run it locally 
-      - '81:81' # Comment this line to run it locally   
+    #ports: # Uncomment this line to run it on server
+    #  - '80:80' # Uncomment this line to run it on server
+    #  - '443:443' # Uncomment this line to run it on server 
+    #  - '81:81' # Uncomment this line to run it on server
     volumes:
       - ./npm/data:/data
       - ./npm/letsencrypt:/etc/letsencrypt
