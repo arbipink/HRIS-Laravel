@@ -19,17 +19,10 @@ services:
       dockerfile: PHP.Dockerfile
     container_name: php-container
     restart: always
+    # Matches host UID/GID so composer files aren't locked to root
+    user: "${UID:-1000}:${GID:-1000}" 
     volumes:
       - ./:/var/www/html
-    networks:
-      - backend_net
-
-  composer:
-    image: composer:latest
-    container_name: composer-container
-    volumes:
-      - ./:/app
-    user: "${UID:-1000}:${GID:-1000}"
     networks:
       - backend_net
 
