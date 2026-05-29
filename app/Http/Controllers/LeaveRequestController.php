@@ -10,8 +10,12 @@ class LeaveRequestController extends Controller
 {
     public function downloadPdf(LeaveRequest $leaveRequest)
     {
-        if (Auth::user()->employee->id !== $leaveRequest->employee_id &&
-            ! in_array(Auth::user()->employee->role->value, ['MANAGER', 'HRD'])) {
+        $employee = Auth::user()->employee;
+
+        if (! $employee || (
+            $employee->id !== $leaveRequest->employee_id &&
+            ! in_array($employee->role->value, ['ADMIN', 'MANAGER', 'HRD'])
+        )) {
             abort(403);
         }
 

@@ -14,12 +14,17 @@ class AttendanceSheetExport implements FromQuery, WithHeadings, WithMapping, Wit
     public function __construct(
         public ?string $fromDate = null,
         public ?string $toDate = null,
+        public ?array $employeeIds = null,
     ) {}
 
     public function query(): Builder
     {
         $query = Attendance::query()
             ->with(['employee.user']);
+
+        if ($this->employeeIds) {
+            $query->whereIn('employee_id', $this->employeeIds);
+        }
 
         if ($this->fromDate) {
             $query->where('date', '>=', $this->fromDate);

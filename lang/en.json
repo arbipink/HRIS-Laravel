@@ -131,6 +131,7 @@
     "resource.work_location.fields.updated_at": "Updated At",
     "fields.from_date": "From Date",
     "fields.to_date": "To Date",
+    "fields.all_employees": "All Employees",
     "widget.attendance.clock_in": "Clock In",
     "widget.attendance.clock_out": "Clock Out",
     "widget.attendance.processing": "Processing...",

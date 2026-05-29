@@ -13,9 +13,12 @@ use Illuminate\Support\Facades\Storage;
 
 Route::get('/leave-requests/{record}/attachment', function (LeaveRequest $record) {
     $user = Auth::user();
+    $employee = $user->employee;
 
-    if ($user->employee?->id !== $record->employee_id
-        && ! in_array($user->employee?->role, [EmployeeRole::MANAGER, EmployeeRole::HRD])) {
+    if (! $employee || (
+        $employee->id !== $record->employee_id
+        && ! in_array($employee->role, [EmployeeRole::ADMIN, EmployeeRole::MANAGER, EmployeeRole::HRD])
+    )) {
         abort(403);
     }
 
