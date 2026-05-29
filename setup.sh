@@ -37,3 +37,7 @@ else
 fi
 
 echo "✨ Setup complete! your application is ready."
+echo "Open the site here http://localhost/"
+echo "Manage the database here http://localhost:8080/"
+echo "Default Email: admin@company.com"
+echo "Default Password: password"

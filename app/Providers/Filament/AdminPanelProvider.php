@@ -29,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('')
             ->login()
-            ->brandName('HRMS')
+            ->brandName('Attendance System')
             ->colors([
                 'primary' => Color::Cyan,
             ])

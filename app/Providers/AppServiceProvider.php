@@ -39,10 +39,5 @@ class AppServiceProvider extends ServiceProvider
                 EmployeeRole::HRD,
             ]);
         });
-
-        // For debuggin in my phone using ngrok
-        if (str_contains(request()->getHost(), 'free.dev')) {
-            URL::forceScheme('https');
-        }
     }
 }
