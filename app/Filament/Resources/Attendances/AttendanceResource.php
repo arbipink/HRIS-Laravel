@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Attendances;
 
+use App\Enums\AttendanceStatus;
 use App\Enums\EmployeeRole;
 use App\Filament\Resources\Attendances\Pages\ManageAttendances;
 use App\Models\Attendance;
@@ -12,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -136,8 +138,17 @@ class AttendanceResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('date', 'desc')
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->label(__('resource.attendance.fields.status'))
+                    ->options(AttendanceStatus::class)
+                    ->multiple()
+                    ->default([
+                        AttendanceStatus::LATE->value,
+                        AttendanceStatus::ABSENT->value,
+                        AttendanceStatus::LEAVE->value,
+                    ]),
             ])
             ->recordActions([
                 ViewAction::make(),

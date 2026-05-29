@@ -324,6 +324,7 @@ class LeaveRequestResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('start_date', 'desc')
             ->filters([
                 //
             ])

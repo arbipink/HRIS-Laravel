@@ -64,7 +64,7 @@ class AttendanceServiceTest extends TestCase
         $this->assertNotNull($attendance->clock_out);
         $this->assertDatabaseHas('fines', [
             'employee_id' => $employee->id,
-            'reason' => 'Forgot to Clock Out',
+            'reason' => __('service.attendance.reasons.forgot_clock_out'),
         ]);
     }
 
@@ -93,7 +93,7 @@ class AttendanceServiceTest extends TestCase
         $this->assertDatabaseHas('fines', [
             'employee_id' => $employee->id,
             'date' => $date->toDateString(),
-            'reason' => 'Absent without notice',
+            'reason' => __('service.attendance.reasons.absent'),
         ]);
     }
 }
