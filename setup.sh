@@ -26,15 +26,7 @@ echo "🗄️ Running database migrations and seeders..."
 docker compose exec php php artisan migrate:fresh --seed
 
 echo "🎨 Compiling frontend assets..."
-if [ -x "$(command -v npm)" ]; then
-    echo "Using local npm installation..."
-    npm install
-    npm audit fix
-    npm run build
-else
-    echo "⚠️ npm not found locally. Using a temporary Docker Node container instead..."
-    docker run --rm -v "$(pwd)":/app -w /app node:alpine sh -c "npm install && npm audit fix && npm run build"
-fi
+docker compose run --rm node sh -c "npm install && npm audit fix && npm run build && npm audit fix"
 
 echo "✨ Setup complete! your application is ready."
 echo "Open the site here http://localhost/"
